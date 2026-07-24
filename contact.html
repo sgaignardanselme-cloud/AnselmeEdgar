@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <script>document.documentElement.classList.add('js');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact — [NOM DE LA MARQUE]</title>
+  <meta name="description" content="Rejoins la liste d'attente de [NOM DE LA MARQUE] et suis-nous sur les réseaux." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <link rel="preload" as="style" href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap" rel="stylesheet" />
+  </noscript>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo">[NOM MARQUE]</a>
+      <button class="nav-toggle" aria-label="Ouvrir le menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <nav class="main-nav">
+        <ul>
+          <li><a href="index.html">Accueil</a></li>
+          <li><a href="univers.html">Univers</a></li>
+          <li><a href="drop.html">Drop</a></li>
+          <li><a href="archives.html">Archives</a></li>
+          <li><a href="contact.html" class="is-active">Contact</a></li>
+        </ul>
+        <div class="socials">
+          <a href="#" target="_blank" rel="noopener">Instagram</a>
+          <a href="#" target="_blank" rel="noopener">TikTok</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <section class="reveal" style="padding-top:48px;">
+      <div class="container">
+        <p class="section-label">Contact / Newsletter</p>
+        <h1 class="section-title">Reste connecté·e</h1>
+        <p class="section-text">
+          [PLACEHOLDER] Laisse ton email pour être prévenu·e des prochains
+          drops en avant-première, ou suis-nous directement sur les réseaux.
+        </p>
+
+        <div class="contact-grid">
+          <div>
+            <!--
+              [PLACEHOLDER FORMULAIRE]
+              Remplacer "action" par ton endpoint Formspree
+              (https://formspree.io) une fois le compte créé,
+              ex: https://formspree.io/f/xxxxxxx
+              Alternative : remplacer tout le <form> par un embed Mailchimp.
+            -->
+            <form action="https://formspree.io/f/REMPLACER_PAR_VOTRE_ID" method="POST">
+              <div class="form-field">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="ton@email.com" required />
+              </div>
+              <div class="form-field">
+                <label for="reseau">Réseau préféré (optionnel)</label>
+                <select id="reseau" name="reseau">
+                  <option value="">Sélectionner...</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="tiktok">TikTok</option>
+                  <option value="email">Email</option>
+                </select>
+              </div>
+              <button type="submit" class="btn">S'inscrire à la liste d'attente</button>
+              <p class="form-note">
+                [PLACEHOLDER] En t'inscrivant, tu acceptes de recevoir des
+                emails de [NOM DE LA MARQUE]. Aucun spam, promis.
+              </p>
+            </form>
+          </div>
+
+          <div>
+            <p class="section-label">Retrouve-nous</p>
+            <div class="social-list">
+              <a href="#" target="_blank" rel="noopener">Instagram →</a>
+              <a href="#" target="_blank" rel="noopener">TikTok →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; 2026 [NOM DE LA MARQUE]. Tous droits réservés.</p>
+      <p>[PLACEHOLDER — statut juridique / SIREN une fois créé]</p>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
