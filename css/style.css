@@ -80,6 +80,18 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* `background-attachment: fixed` forces a repaint on every scroll frame
+   on many mobile browsers — a real jank risk archives.html (the one
+   page using this default, non-scrollytelling body) doesn't need to
+   take on for a purely decorative backdrop. Scrolls normally with the
+   page below this width; visually near-identical since it's a soft,
+   large-radius glow anyway. */
+@media (max-width: 760px) {
+  body {
+    background-attachment: scroll, scroll, scroll, scroll;
+  }
+}
+
 /* Scrollytelling page (index.html): one continuous blue gradient sized
    to the full document height (background-attachment stays "scroll",
    the default — never "fixed", or it would just tile per viewport
@@ -287,14 +299,16 @@ ul {
 }
 
 /* Permanently visible cart entry point (not a real link/drawer yet).
-   Same adaptive --text token as the rest of the floating nav. */
+   Same adaptive --text token as the rest of the floating nav. 44x44 —
+   not the 36x36 the icon itself would need — so it's a comfortable
+   touch target, not just a precise mouse one. */
 .cart-btn {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   background: none;
   border: none;
   color: var(--text);
@@ -330,14 +344,15 @@ ul {
 }
 
 /* The hamburger doubles as the close control: its three bars morph into
-   an X (via .is-open) instead of a separate close button. */
+   an X (via .is-open) instead of a separate close button. 44x44 touch
+   target, same reasoning as .cart-btn above. */
 .hamburger-btn {
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 6px;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   background: none;
   border: none;
   cursor: pointer;
@@ -579,8 +594,13 @@ ul {
 .brand-intro-name {
   font-family: "Times New Roman", Times, serif;
   font-weight: 400;
-  font-size: clamp(3.5rem, 16vw, 9rem);
-  line-height: 1;
+  /* Lower floor + a touch more line-height than the old clamp(3.5rem...):
+     a multi-word placeholder name wraps to 2-3 lines at 375-430px, and
+     3.5rem/line-height:1 was tuned for a single short word, not a
+     wrapped block — this keeps it from ever crowding at phone widths. */
+  font-size: clamp(2.6rem, 15vw, 9rem);
+  line-height: 1.05;
+  overflow-wrap: break-word;
   text-align: center;
   color: var(--text);
 }
@@ -629,7 +649,10 @@ html.js .signature-reveal {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  padding: 72px 20px 40px;
+  /* 88px top clearance, not 72px — the floating nav's icons grew to 44px
+     (from 36px) for touch targets, so the old value sat too close under
+     them. */
+  padding: 88px 20px 40px;
 }
 
 @media (min-width: 760px) {
@@ -860,7 +883,17 @@ html.js .signature-reveal {
 
 /* Generous, cinematic breathing room instead of a densely packed page. */
 section {
-  padding: 88px 0;
+  /* Was a flat 88px down to the smallest phone — on a one-pager with
+     this many stacked sections, that's a lot of pure empty scroll on a
+     short viewport. Steps up through 640/760 instead of jumping
+     straight to the desktop value. */
+  padding: 56px 0;
+}
+
+@media (min-width: 640px) {
+  section {
+    padding: 88px 0;
+  }
 }
 
 @media (min-width: 760px) {
@@ -1131,11 +1164,20 @@ section {
 /* Product grid: a plain, clearly-aligned grid — not the "poster" treatment
    used for the hero/drop artwork. Each piece is a rectangle with modestly
    rounded corners and its name reads underneath, not overlapping the
-   image. */
+   image. Single column by default (phones) — two cramped narrow columns
+   read worse than one full-width card; steps up to 2 then 3 as there's
+   actually room for them. */
 .gallery {
   display: grid;
-  gap: 28px 16px;
-  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 480px) {
+  .gallery {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px 16px;
+  }
 }
 
 /* The whole card is the link (produit.html) — no separate "Voir" label
@@ -1237,8 +1279,19 @@ section {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 32px;
+  /* Tighter by default: at phone widths the quantity stepper usually
+     wraps onto its own line below the size buttons (not enough room
+     side by side), and 32px reads as an oversized gap between just two
+     wrapped rows. Full 32px only once there's reliably room for both
+     side by side. */
+  gap: 20px;
   margin: 28px 0 8px;
+}
+
+@media (min-width: 480px) {
+  .selectors-row {
+    gap: 32px;
+  }
 }
 
 .size-selector {
@@ -1301,6 +1354,10 @@ section {
    selected/unselected language. */
 .size-option {
   min-width: 56px;
+  /* Explicit min-height (padding alone lands ~44px, but not reliably —
+     depends on the font's actual line box) so it's a guaranteed
+     comfortable touch target, not just a mouse-precise one. */
+  min-height: 44px;
   padding: 14px 18px;
   font-family: var(--font-display);
   text-transform: uppercase;
@@ -1378,12 +1435,22 @@ section {
 /* Each line item reuses the light --surface "card" treatment already
    used for gallery/exhibition pieces — rounded corners, same border —
    rather than sitting directly on the dark gradient like the rest of
-   this page's text does. */
+   this page's text does.
+   Mobile-first as a named-area grid: name/size + remove on their own
+   row, the stepper on its own full-width row, price/total on the last
+   — the old flex-wrap version just let 5 items wrap wherever they
+   happened to break, which got messy once the stepper (~130px) and the
+   remove button no longer fit next to the name at phone widths. Reverts
+   to the plain flex row (all 5 side by side) once there's actually
+   enough width for that, at 640px. */
 .cart-item {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "info remove"
+    "qty qty"
+    "price total";
+  gap: 12px 16px;
   padding: 20px;
   background: var(--surface);
   border: 1px solid rgba(27, 42, 74, 0.08);
@@ -1391,7 +1458,7 @@ section {
 }
 
 .cart-item-info {
-  flex: 1 1 180px;
+  grid-area: info;
   min-width: 0;
 }
 
@@ -1414,6 +1481,11 @@ section {
    assume it sits directly on the dark gradient (white glass fill/text) —
    inside this light card it needs the ink-based equivalent instead. */
 .cart-item .quantity-selector {
+  grid-area: qty;
+  /* Grid items stretch to fill their area by default — without this
+     the stepper would stretch edge-to-edge instead of sitting at its
+     own compact width. */
+  justify-self: start;
   border-color: rgba(27, 42, 74, 0.2);
   background: rgba(27, 42, 74, 0.04);
 }
@@ -1429,24 +1501,29 @@ section {
 
 .cart-item-price,
 .cart-item-total {
-  flex: 0 0 auto;
-  min-width: 70px;
   font-family: var(--font-display);
   color: var(--ink);
-  text-align: right;
+}
+
+.cart-item-price {
+  grid-area: price;
+  text-align: left;
 }
 
 .cart-item-total {
-  min-width: 80px;
+  grid-area: total;
+  text-align: right;
 }
 
 .cart-item-remove {
-  flex: 0 0 auto;
+  grid-area: remove;
+  align-self: start;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  /* 44x44 touch target, not the 36x36 a mouse cursor alone would need. */
+  width: 44px;
+  height: 44px;
   background: none;
   border: none;
   color: var(--ink-muted);
@@ -1456,6 +1533,39 @@ section {
 
 .cart-item-remove:hover {
   color: var(--ink);
+}
+
+@media (min-width: 640px) {
+  .cart-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .cart-item-info {
+    flex: 1 1 180px;
+  }
+
+  .cart-item .quantity-selector {
+    justify-self: auto;
+  }
+
+  .cart-item-price,
+  .cart-item-total {
+    flex: 0 0 auto;
+    min-width: 70px;
+    text-align: right;
+  }
+
+  .cart-item-total {
+    min-width: 80px;
+  }
+
+  .cart-item-remove {
+    flex: 0 0 auto;
+    align-self: center;
+  }
 }
 
 .cart-summary {
