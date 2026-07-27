@@ -1164,18 +1164,22 @@ section {
 /* Product grid: a plain, clearly-aligned grid — not the "poster" treatment
    used for the hero/drop artwork. Each piece is a rectangle with modestly
    rounded corners and its name reads underneath, not overlapping the
-   image. Single column by default (phones) — two cramped narrow columns
-   read worse than one full-width card; steps up to 2 then 3 as there's
-   actually room for them. */
+   image. Used for both "Les pièces" (index.html) and "Autres pièces du
+   drop" (produit.html) — one change here covers both.
+   2 columns below 768px (not 1) — a full-width single card wastes the
+   screen more than it helps; text/padding inside each card are scaled
+   down to match (see .gallery-item-photo/.gallery-item-label below).
+   The tap target either way is the whole card (image + label), so
+   shrinking the card doesn't shrink what you actually have to hit. */
 .gallery {
   display: grid;
-  gap: 20px;
-  grid-template-columns: 1fr;
+  gap: 20px 14px;
+  grid-template-columns: repeat(2, 1fr);
 }
 
-@media (min-width: 480px) {
+@media (min-width: 768px) {
   .gallery {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 28px 16px;
   }
 }
@@ -1190,7 +1194,13 @@ section {
 .gallery-item {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .gallery-item {
+    gap: 10px;
+  }
 }
 
 .gallery-item-visual {
@@ -1209,11 +1219,21 @@ section {
   color: var(--ink-muted);
   font-family: var(--font-display);
   text-transform: uppercase;
-  font-size: 0.65rem;
+  /* Smaller label + tighter padding at 2-column mobile width (~150-170px
+     cards) — the 0.65rem/12px desktop values were sized for a wider
+     card and crowd the placeholder text at this scale. */
+  font-size: 0.55rem;
   letter-spacing: 0.05em;
   text-align: center;
-  padding: 12px;
+  padding: 8px;
   transition: transform 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .gallery-item-photo {
+    font-size: 0.65rem;
+    padding: 12px;
+  }
 }
 
 .gallery-item:hover .gallery-item-photo {
@@ -1221,15 +1241,15 @@ section {
 }
 
 .gallery-item-label {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--text-muted-strong);
 }
 
-@media (min-width: 640px) {
-  .gallery {
-    grid-template-columns: repeat(3, 1fr);
+@media (min-width: 768px) {
+  .gallery-item-label {
+    font-size: 0.8rem;
   }
 }
 
