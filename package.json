@@ -1,0 +1,28 @@
+{
+  "name": "mon-site-marque",
+  "version": "1.0.0",
+  "description": "Site statique HTML/CSS/JS (aucune dépendance à installer). Ouvrir `index.html` dans un navigateur suffit en local ; pour le déploiement voir plus bas.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:shader": "vite build",
+    "dev:shader": "vite"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@react-three/fiber": "^9.6.1",
+    "@shadergradient/react": "^2.4.20",
+    "camera-controls": "^3.1.2",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "three": "^0.185.1",
+    "three-stdlib": "^2.36.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.0.4",
+    "vite": "^8.1.5"
+  }
+}

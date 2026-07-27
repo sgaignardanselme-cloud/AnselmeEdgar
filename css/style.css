@@ -1,10 +1,15 @@
 /* =========================================================
    [PLACEHOLDER MARQUE] — Site vitrine V1
-   Palette : fond blanc nacré (--paper) avec un léger voile irisé
-   (touches rose/lavande/or très diluées, façon reflet de coquillage)
-   + un bleu profond unique (--ink) pour tout le texte. Pas de gris,
-   pas de teal : la hiérarchie (titres/corps/texte tertiaire) se fait
-   par l'opacité de --ink, jamais par une teinte différente.
+   Palette : sur la page en défilement (`body.scrollytelling`), le fond
+   est toujours sombre/coloré (dégradé bleu + ShaderGradient animé par-
+   dessus, voir .site-shader-bg) — jamais blanc ou clair. Le texte "posé
+   directement sur ce fond" (labels, titres, paragraphes, footer — pas
+   le texte à l'intérieur des cartes claires) utilise --text/--text-muted*,
+   fixés en blanc pour cette page (voir --text-rgb sur body.scrollytelling
+   plus bas). --ink/--ink-muted* restent sombres et fixes : header, nav,
+   boutons et texte à l'intérieur des cartes/surfaces claires (qui
+   gardent leur propre fond clair quel que soit l'endroit de la page où
+   elles se trouvent) doivent au contraire rester foncés pour la lisibilité.
    ========================================================= */
 
 :root {
@@ -13,12 +18,39 @@
   --ink-muted: rgba(27, 42, 74, 0.6);
   --ink-muted-strong: rgba(27, 42, 74, 0.82);
   --surface: #eef0f6;
+  /* Four explicit stops rather than two: interpolating RGB straight from
+     a very light to a very dark blue crosses a desaturated, grey-looking
+     midpoint. Anchoring the path through two genuinely saturated blues
+     at 33%/66% keeps every point along the gradient reading as "blue". */
+  --gradient-stop-1: #dceefb;
+  --gradient-stop-2: #6faedb;
+  --gradient-stop-3: #1f5c99;
+  --gradient-stop-4: #071b33;
+  /* Default = --ink's own channels, so any page without .scrollytelling
+     (archives.html) reads exactly as before: static dark text on its
+     light paper background. The scrollytelling page (index.html)
+     overrides this to white on body.scrollytelling — its background is
+     always dark/colored, never light (a <noscript> fallback further
+     down covers the no-JS case there specifically). */
+  --text-rgb: 27, 42, 74;
+  --text: rgb(var(--text-rgb));
+  --text-muted: rgba(var(--text-rgb), 0.6);
+  --text-muted-strong: rgba(var(--text-rgb), 0.82);
   --radius-sm: 10px;
   --radius-md: 20px;
   --radius-lg: 28px;
   --font-display: "Clash Display", "Helvetica Neue", Arial, sans-serif;
+  /* Just for the hero's main title: a classic, traditional-book serif
+     (sturdy, generous x-height — holds its visual weight at display
+     sizes better than a lighter classic serif) instead of the site's
+     geometric display sans — used nowhere else, so section titles, nav,
+     buttons etc. stay on --font-display. */
+  --font-hero: "Merriweather", Georgia, "Times New Roman", serif;
   --font-body: "Inter", "Helvetica Neue", Arial, sans-serif;
-  --header-h: 64px;
+  /* No sticky bar reserves layout space any more (nav floats over the
+     content) — this is now just a small clearance so anchored sections
+     don't land flush under the floating logo/hamburger. */
+  --header-h: 32px;
 }
 
 * {
@@ -31,10 +63,8 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Pearl, not flat white: three very soft, fixed colour washes (blush,
-   periwinkle, warm gold) overlapping like light catching nacre at
-   different angles, plus a fine ink-toned grain so the page still reads
-   as a lit, textured surface rather than a plain white fill. */
+/* Default (any page without .scrollytelling, e.g. archives.html): the
+   calm pearl background, static ink text — unaffected by scroll. */
 body {
   background-color: var(--paper);
   background-image:
@@ -50,13 +80,54 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Scrollytelling page (index.html): one continuous blue gradient sized
+   to the full document height (background-attachment stays "scroll",
+   the default — never "fixed", or it would just tile per viewport
+   instead of spanning the whole page) — light at top, near-black at
+   bottom, so scrolling naturally reads as the page darkening. */
+/* Text sitting directly on this background (or on the ShaderGradient
+   layered on top of it, see .site-shader-bg) is always white — the
+   background is never a plain white/light surface, so unlike --ink
+   (used inside light cards/buttons) this no longer needs to adapt to
+   scroll position. Overridden here rather than in :root so pages
+   without .scrollytelling (archives.html) keep --text-rgb's default
+   dark value untouched. */
+body.scrollytelling {
+  --text-rgb: 255, 255, 255;
+  background: linear-gradient(
+    180deg,
+    var(--gradient-stop-1) 0%,
+    var(--gradient-stop-2) 33%,
+    var(--gradient-stop-3) 66%,
+    var(--gradient-stop-4) 100%
+  );
+  color: var(--text);
+}
+
+/* Animated ShaderGradient background (mounted by js/shader-bg.bundle.js,
+   built from src/shader-bg/). Sits behind the whole scroll as a fixed
+   layer, on top of body's own static gradient — the static gradient
+   stays as a fallback in case the WebGL canvas fails to load. */
+.site-shader-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+}
+
 /* Page transition: a CSS animation (not a JS-toggled class) reveals the
    page on load, so it starts and completes on its own the moment the
    browser paints — nothing can leave it stuck waiting on a script. The
    exit fade (`is-leaving`) is still JS-triggered since it responds to a
    click, which is inherently a script-driven moment. Scoped to `html.js`
    (set by an inline script in <head>, before body paints); plain `body`
-   above always defaults fully visible with no JS. */
+   above always defaults fully visible with no JS.
+   Opacity only — deliberately no `transform` here. Any computed
+   transform value other than the literal keyword `none` (even a
+   completed animation holding `translateY(0)` via fill-mode: forwards)
+   turns <body> into the containing block for every `position: fixed`
+   descendant, so fixed elements (the menu, the floating nav, the dot
+   nav) end up positioned against the full document height instead of
+   the viewport — they still "work", just thousands of pixels off-screen. */
 html.js body {
   animation: page-enter 0.3s ease forwards;
 }
@@ -64,31 +135,16 @@ html.js body {
 @keyframes page-enter {
   from {
     opacity: 0;
-    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
 html.js body.is-leaving {
   animation: none;
   opacity: 0;
-  transform: translateY(-10px);
-  transition: opacity 0.15s ease, transform 0.15s ease;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html.js body {
-    animation: none;
-    opacity: 1;
-    transform: none;
-  }
-
-  html.js body.is-leaving {
-    transform: none;
-  }
+  transition: opacity 0.15s ease;
 }
 
 /* ---------- Scroll-triggered reveals ---------- */
@@ -184,162 +240,329 @@ ul {
   padding: 0 20px;
 }
 
-/* ---------- Header / Nav ---------- */
-
-.site-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  height: var(--header-h);
-  display: flex;
-  align-items: center;
-  background: rgba(251, 250, 247, 0.86);
-  backdrop-filter: blur(6px);
-  border-bottom: 1px solid rgba(27, 42, 74, 0.08);
+/* Anchor targets land below the sticky header instead of underneath it. */
+[id] {
+  scroll-margin-top: var(--header-h);
 }
 
-.site-header .container {
+/* ---------- Floating nav (hamburger only — no bar, no links visible) ---------- */
+/* Brand name (left) and hamburger (right) float directly over the page
+   — no bar behind them — so both use the adaptive --text token (light
+   on the dark bottom of the gradient, dark on the light top). The nav
+   links themselves live only inside .site-menu, fully hidden until the
+   hamburger opens it. */
+.floating-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 250;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 100%;
+  padding: 20px;
+  pointer-events: none;
 }
 
-.logo {
+.floating-nav > * {
+  pointer-events: auto;
+}
+
+.floating-logo {
   font-family: var(--font-display);
   font-size: 1.1rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  color: var(--text);
+  transition: color 0.2s ease;
 }
 
-.nav-toggle {
+/* The hamburger doubles as the close control: its three bars morph into
+   an X (via .is-open) instead of a separate close button. */
+.hamburger-btn {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 5px;
-  width: 32px;
-  height: 32px;
+  gap: 6px;
+  width: 36px;
+  height: 36px;
   background: none;
   border: none;
   cursor: pointer;
-  z-index: 110;
 }
 
-.nav-toggle span {
+.hamburger-btn span {
   display: block;
   height: 2px;
   width: 100%;
-  background: var(--ink);
-  transition: transform 0.25s ease, opacity 0.25s ease;
+  background: var(--text);
+  transition: transform 0.25s ease, opacity 0.25s ease, background 0.2s ease;
 }
 
-.nav-toggle.is-open span:nth-child(1) {
-  transform: translateY(7px) rotate(45deg);
+.hamburger-btn.is-open span {
+  background: #fff;
 }
-.nav-toggle.is-open span:nth-child(2) {
+
+.hamburger-btn.is-open span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.hamburger-btn.is-open span:nth-child(2) {
   opacity: 0;
 }
-.nav-toggle.is-open span:nth-child(3) {
-  transform: translateY(-7px) rotate(-45deg);
+
+.hamburger-btn.is-open span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
 }
 
-.main-nav {
+/* The menu is a dark, (near-)opaque overlay — position:fixed, so it sits
+   on top of the page and never pushes content down — with visibility
+   toggled alongside the transform so the links are genuinely
+   unreachable (not just off-screen) while closed. Dark rather than the
+   light paper surface: it echoes the gradient's own darkest stop, so
+   the panel reads as part of the same palette instead of an unrelated
+   light card. */
+.site-menu {
   position: fixed;
-  top: var(--header-h);
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--paper);
-  transform: translateX(100%);
-  transition: transform 0.3s ease;
+  inset: 0;
+  z-index: 220;
+  background: rgba(7, 27, 51, 0.97);
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
   display: flex;
   flex-direction: column;
-  padding: 40px 20px;
+  justify-content: center;
+  padding: 32px;
 }
 
-.main-nav.is-open {
-  transform: translateX(0);
+.site-menu.is-open {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.3s ease;
 }
 
-.main-nav ul {
+.site-menu-nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.site-menu-nav ul {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-.main-nav a {
+.site-menu-nav a {
   font-family: var(--font-display);
-  font-size: 1.8rem;
+  font-size: clamp(1.8rem, 6vw, 2.6rem);
   text-transform: uppercase;
-  color: var(--ink-muted-strong);
+  color: rgba(255, 255, 255, 0.75);
   display: inline-block;
   position: relative;
   transition: color 0.25s ease;
 }
 
-.main-nav a::after {
+.site-menu-nav a::after {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -3px;
+  bottom: -4px;
   height: 2px;
-  background: var(--ink);
+  background: #fff;
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.25s ease;
 }
 
-.main-nav a:hover,
-.main-nav a:focus-visible {
-  color: var(--ink);
+.site-menu-nav a:hover,
+.site-menu-nav a:focus-visible {
+  color: #fff;
 }
 
-.main-nav a:hover::after,
-.main-nav a:focus-visible::after {
+.site-menu-nav a:hover::after,
+.site-menu-nav a:focus-visible::after {
   transform: scaleX(1);
 }
 
-.main-nav a.is-active {
-  color: var(--ink);
+.site-menu-nav a.is-active {
+  color: #fff;
 }
 
-.main-nav .socials {
-  margin-top: auto;
+.site-menu-nav .socials {
+  margin-top: 40px;
   display: flex;
-  gap: 20px;
+  gap: 24px;
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--ink-muted);
+  color: rgba(255, 255, 255, 0.55);
 }
 
-@media (min-width: 860px) {
-  .nav-toggle {
-    display: none;
+@media (prefers-reduced-motion: reduce) {
+  .site-menu {
+    transition: opacity 0.01ms ease, visibility 0s linear;
   }
+}
 
-  .main-nav {
-    position: static;
-    transform: none;
-    background: none;
-    flex-direction: row;
-    align-items: center;
-    padding: 0;
+/* ---------- Dot navigation (single scrolling page) ---------- */
+/* Fixed on the right edge, always visible; script.js's scrollspy toggles
+   `.is-active` to match whichever section is currently centred in the
+   viewport. Hidden below a breakpoint — the hamburger menu already
+   covers section jumps on small screens. */
+.dot-nav {
+  position: fixed;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 150;
+  display: none;
+  flex-direction: column;
+  gap: 18px;
+}
+
+@media (min-width: 900px) {
+  .dot-nav {
+    display: flex;
   }
+}
 
-  .main-nav ul {
-    flex-direction: row;
-    gap: 32px;
+.dot-nav-item {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(27, 42, 74, 0.35);
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+
+.dot-nav-item.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  transform: scale(1.3);
+}
+
+.dot-nav-label {
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+  background: var(--paper);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(27, 42, 74, 0.1);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.dot-nav-item:hover .dot-nav-label,
+.dot-nav-item:focus-visible .dot-nav-label {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot-nav-item {
+    transform: none !important;
   }
+}
 
-  .main-nav a {
-    font-size: 0.85rem;
-    letter-spacing: 0.03em;
+/* ---------- Progress rail ---------- */
+/* A fixed vertical thread down the left edge — always visible on screen
+   (it never scrolls away, unlike a line drawn into the document), with a
+   marker that slides down it in step with scroll position: a reading
+   gauge for how far through the page you are. Reuses --text-rgb (the
+   same token driving body-copy colour) rather than its own colour logic
+   — since it's also "sitting on" whatever part of the gradient is
+   currently on screen, the contrast math is identical. */
+.progress-rail {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 24px;
+  width: 1px;
+  z-index: 140;
+  background: rgba(var(--text-rgb), 0.22);
+  pointer-events: none;
+}
+
+.progress-rail-marker {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgb(var(--text-rgb));
+  box-shadow: 0 0 8px rgba(var(--text-rgb), 0.5);
+  transform: translate(-50%, -50%);
+}
+
+@media (max-width: 640px) {
+  .progress-rail {
+    left: 12px;
   }
+}
 
-  .main-nav .socials {
-    display: none;
+/* ---------- Signature (opening chapter, before the hero) ---------- */
+/* Full-viewport, minimal — the gradient's lightest stop starts here,
+   nothing competes with the name. */
+.brand-intro {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  overflow: hidden;
+}
+
+.brand-intro-name {
+  font-family: "Times New Roman", Times, serif;
+  font-weight: 400;
+  font-size: clamp(3.5rem, 16vw, 9rem);
+  line-height: 1;
+  text-align: center;
+  color: var(--text);
+}
+
+/* Default: fully visible — a no-JS visitor just sees the name, no
+   dependency on any script to reveal it. */
+.signature-reveal {
+  opacity: 1;
+}
+
+/* TEMPORARY (per request): a plain autoplaying fade, verified working
+   before trying a fancier effect again. Deliberately a plain CSS
+   `animation` (not a JS-toggled `.is-visible` class via
+   IntersectionObserver) — this section is the very first thing on the
+   page, always visible at scroll position 0, so it doesn't need
+   scroll-triggering at all, and a self-playing animation can never get
+   stuck at opacity: 0 the way a class waiting on a script/observer can. */
+html.js .signature-reveal {
+  animation: signature-fade-in 1s ease forwards;
+}
+
+@keyframes signature-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.js .signature-reveal {
+    animation: none;
+    opacity: 1;
   }
 }
 
@@ -350,11 +573,11 @@ ul {
    instead of hand-guessed pixel offsets that can overlap. */
 .hero {
   position: relative;
-  min-height: calc(100svh - var(--header-h));
+  min-height: 100svh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  padding: 28px 20px 40px;
+  padding: 72px 20px 40px;
 }
 
 @media (min-width: 760px) {
@@ -362,7 +585,7 @@ ul {
     flex-direction: row;
     align-items: center;
     gap: 56px;
-    padding: 48px 40px;
+    padding: 96px 40px 48px;
   }
 }
 
@@ -372,10 +595,9 @@ ul {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(70% 60% at 50% 30%, rgba(214, 224, 255, 0.4) 0%, transparent 62%),
-    radial-gradient(60% 50% at 85% 85%, rgba(255, 224, 214, 0.28) 0%, transparent 65%),
-    linear-gradient(180deg, rgba(251, 250, 247, 0) 40%, rgba(251, 250, 247, 0.92) 92%),
-    var(--paper);
+    radial-gradient(70% 60% at 50% 30%, rgba(255, 255, 255, 0.4) 0%, transparent 62%),
+    radial-gradient(60% 50% at 85% 85%, rgba(255, 255, 255, 0.16) 0%, transparent 65%),
+    linear-gradient(180deg, rgba(220, 238, 251, 0) 40%, var(--gradient-stop-1) 92%);
 }
 
 /* Reusable film-grain overlay: keeps textured surfaces (hero wall, gallery
@@ -474,21 +696,29 @@ ul {
 }
 
 .hero-title {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 8vw, 4rem);
-  line-height: 1.05;
+  font-family: var(--font-hero);
+  font-weight: 700;
+  /* Slightly larger than a display-sans title would need — a classic
+     serif at the same font-size reads with less visual weight, so the
+     clamp is bumped up (~10%) to keep the same on-screen presence. */
+  font-size: clamp(2.2rem, 9vw, 4.4rem);
+  line-height: 1.15;
   text-transform: uppercase;
   margin-bottom: 20px;
 }
 
 .hero-sub {
   max-width: 480px;
-  color: var(--ink-muted-strong);
+  color: var(--text-muted-strong);
   margin-bottom: 28px;
 }
 
 /* ---------- Buttons ---------- */
 
+/* Glassmorphism: every button here sits on a dark/coloured backdrop
+   (page gradient + shader, or the hero's pale glow) — never a plain
+   light card — so a frosted, semi-transparent fill reads correctly
+   against it and lets that backdrop blur through. */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -500,30 +730,34 @@ ul {
   font-size: 0.85rem;
   letter-spacing: 0.05em;
   border-radius: var(--radius-sm);
-  border: 2px solid var(--ink);
-  background: var(--ink);
-  color: var(--paper);
-  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px -12px rgba(7, 27, 51, 0.45);
+  color: var(--text);
+  transition: background 0.25s ease, border-color 0.25s ease, backdrop-filter 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 
 .btn:hover {
-  background: var(--paper);
-  border-color: var(--ink);
-  color: var(--ink);
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 10px 28px -12px rgba(7, 27, 51, 0.5);
   transform: scale(1.03);
 }
 
+/* Secondary variant: same glass treatment, just a lighter fill/border
+   so it still reads as the less prominent of the two actions. */
 .btn-outline {
-  background: transparent;
-  color: var(--ink);
-  border-color: rgba(27, 42, 74, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .btn-outline:hover {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--paper);
-  transform: scale(1.03);
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 .btn-row {
@@ -549,7 +783,7 @@ section {
   font-size: 0.8rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--ink);
+  color: var(--text);
   margin-bottom: 14px;
 }
 
@@ -562,7 +796,7 @@ section {
 }
 
 .section-text {
-  color: var(--ink-muted-strong);
+  color: var(--text-muted-strong);
   max-width: 640px;
   margin-bottom: 24px;
 }
@@ -575,7 +809,7 @@ section {
    sharp structural line. */
 .divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, rgba(27, 42, 74, 0.16) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(var(--text-rgb), 0.2) 50%, transparent 100%);
 }
 
 /* ---------- Home: drop preview ---------- */
@@ -620,103 +854,12 @@ section {
   margin-bottom: 10px;
 }
 
-/* ---------- Home: univers teaser ---------- */
-/* A clickable, image-led teaser rather than a text block: the whole card
-   is a link, the visual zooms gently on hover, and the caption card
-   overlaps the image asymmetrically instead of sitting in a plain
-   side-by-side or stacked layout. */
-
-.univers-teaser {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-  text-decoration: none;
-  transition: transform 0.3s ease;
-}
-
-.univers-teaser:hover,
-.univers-teaser:focus-visible {
-  transform: translateY(-4px);
-}
-
-.univers-teaser:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 8px;
-}
-
-.univers-teaser-visual {
-  aspect-ratio: 4 / 5;
-  width: 100%;
-}
-
-.univers-teaser-visual .placeholder-visual {
-  transition: transform 0.3s ease;
-}
-
-.univers-teaser:hover .univers-teaser-visual .placeholder-visual,
-.univers-teaser:focus-visible .univers-teaser-visual .placeholder-visual {
-  transform: scale(1.06);
-}
-
-.univers-teaser-body h2 {
-  margin-bottom: 14px;
-}
-
-.univers-teaser-body p {
-  margin-bottom: 20px;
-}
-
-.univers-teaser-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-display);
-  text-transform: uppercase;
-  font-size: 0.85rem;
-  letter-spacing: 0.05em;
-  color: var(--ink);
-}
-
-.univers-teaser-link .arrow {
-  display: inline-block;
-  transition: transform 0.25s ease;
-}
-
-.univers-teaser:hover .univers-teaser-link .arrow,
-.univers-teaser:focus-visible .univers-teaser-link .arrow {
-  transform: translateX(6px);
-}
-
-@media (min-width: 800px) {
-  .univers-teaser {
-    grid-template-columns: 3fr 2fr;
-    align-items: center;
-    gap: 0;
-  }
-
-  .univers-teaser-visual {
-    aspect-ratio: 4 / 3;
-  }
-
-  .univers-teaser-body {
-    position: relative;
-    z-index: 2;
-    margin-left: -64px;
-    margin-top: 56px;
-    background: var(--paper);
-    border: 1px solid rgba(27, 42, 74, 0.08);
-    border-radius: var(--radius-md);
-    padding: 32px 28px;
-    box-shadow: 0 30px 60px -30px rgba(27, 42, 74, 0.2);
-  }
-}
-
-/* ---------- Univers page (parcours d'exposition) ---------- */
+/* ---------- Univers section (parcours d'exposition) ---------- */
 
 .wall-text {
   max-width: 560px;
   font-style: italic;
-  color: var(--ink-muted-strong);
+  color: var(--text-muted-strong);
   font-size: 1.05rem;
   line-height: 1.7;
 }
@@ -804,6 +947,10 @@ section {
   text-transform: uppercase;
   font-size: 1.4rem;
   line-height: 1.1;
+  /* Sits on .gallery-piece's light --surface card — needs the fixed
+     dark --ink, not the (now always-white) adaptive --text it would
+     otherwise inherit from body. */
+  color: var(--ink);
 }
 
 .cartel-meta {
@@ -837,18 +984,18 @@ section {
 .gallery-link-out {
   display: inline-block;
   font-size: 0.85rem;
-  color: var(--ink-muted);
-  border-bottom: 1px solid rgba(27, 42, 74, 0.15);
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(var(--text-rgb), 0.15);
   padding-bottom: 2px;
   transition: color 0.25s ease, border-color 0.25s ease;
 }
 
 .gallery-link-out:hover {
-  color: var(--ink);
-  border-color: var(--ink);
+  color: var(--text);
+  border-color: var(--text);
 }
 
-/* ---------- Drop page ---------- */
+/* ---------- Drop section ---------- */
 
 .drop-hero-visual {
   aspect-ratio: 3 / 4;
@@ -886,6 +1033,9 @@ section {
   font-family: var(--font-display);
   font-size: 1.1rem;
   text-transform: uppercase;
+  /* Sits on .drop-infos's light --surface card — same reasoning as
+     .cartel-title above. */
+  color: var(--ink);
 }
 
 /* Product grid: a plain, clearly-aligned grid — not the "poster" treatment
@@ -931,7 +1081,7 @@ section {
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: var(--ink-muted-strong);
+  color: var(--text-muted-strong);
 }
 
 @media (min-width: 640px) {
@@ -955,7 +1105,7 @@ section {
   margin: 12px auto 0;
 }
 
-/* ---------- Contact page ---------- */
+/* ---------- Contact section ---------- */
 
 .contact-grid {
   display: grid;
@@ -978,7 +1128,7 @@ section {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 8px;
-  color: var(--ink-muted-strong);
+  color: var(--text-muted-strong);
 }
 
 .form-field input,
@@ -1005,6 +1155,13 @@ section {
   margin-top: 16px;
 }
 
+/* The drop-infos usage sits on a light card (stays static --ink-muted
+   above); this one sits directly on the page background in the Contact
+   section, so it needs the adaptive token instead. */
+.contact-grid .form-note {
+  color: var(--text-muted);
+}
+
 .social-list {
   display: flex;
   flex-direction: column;
@@ -1016,21 +1173,21 @@ section {
   text-transform: uppercase;
   font-size: 1.1rem;
   padding: 14px 0;
-  border-bottom: 1px solid rgba(27, 42, 74, 0.1);
+  border-bottom: 1px solid rgba(var(--text-rgb), 0.2);
   transition: border-color 0.25s ease, padding-left 0.25s ease;
 }
 
 .social-list a:hover {
-  border-color: var(--ink);
+  border-color: var(--text);
   padding-left: 6px;
 }
 
 /* ---------- Footer ---------- */
 
 .site-footer {
-  border-top: 1px solid rgba(27, 42, 74, 0.08);
+  border-top: 1px solid rgba(var(--text-rgb), 0.15);
   padding: 32px 0;
-  color: var(--ink-muted);
+  color: var(--text-muted);
   font-size: 0.8rem;
 }
 
@@ -1169,10 +1326,6 @@ html.js .flip-value.is-flipping {
   .drop-preview:hover,
   .gallery-piece:hover,
   .gallery-item:hover .gallery-item-visual,
-  .univers-teaser:hover,
-  .univers-teaser:focus-visible,
-  .univers-teaser:hover .univers-teaser-visual .placeholder-visual,
-  .univers-teaser:focus-visible .univers-teaser-visual .placeholder-visual,
   .gallery-piece:hover .frame .placeholder-visual {
     transform: none;
   }

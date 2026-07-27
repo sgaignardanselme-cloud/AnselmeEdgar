@@ -5,45 +5,66 @@
   <script>document.documentElement.classList.add('js');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>[NOM DE LA MARQUE] — Streetwear premium</title>
-  <meta name="description" content="[PLACEHOLDER] Marque de vêtements streetwear premium, entre musique, sport et art." />
+  <meta name="description" content="[PLACEHOLDER] Marque de vêtements streetwear premium, entre musique, sport et art : univers, drop en cours et contact, en une page." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Merriweather:wght@700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
   <link rel="preload" as="style" href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
   <noscript>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Merriweather:wght@700&display=swap" rel="stylesheet" />
     <link href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap" rel="stylesheet" />
   </noscript>
   <link rel="stylesheet" href="css/style.css" />
 </head>
-<body>
+<body class="scrollytelling">
 
-  <header class="site-header">
-    <div class="container">
-      <a href="index.html" class="logo">[NOM MARQUE]</a>
-      <button class="nav-toggle" aria-label="Ouvrir le menu" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
-      <nav class="main-nav">
-        <ul>
-          <li><a href="index.html" class="is-active">Accueil</a></li>
-          <li><a href="univers.html">Univers</a></li>
-          <li><a href="drop.html">Drop</a></li>
-          <li><a href="archives.html">Archives</a></li>
-          <li><a href="contact.html">Contact</a></li>
-        </ul>
-        <div class="socials">
-          <a href="#" target="_blank" rel="noopener">Instagram</a>
-          <a href="#" target="_blank" rel="noopener">TikTok</a>
-        </div>
-      </nav>
-    </div>
-  </header>
+  <div id="shader-bg" class="site-shader-bg" aria-hidden="true"></div>
+
+  <div class="floating-nav">
+    <a href="#accueil" class="floating-logo">[NOM MARQUE]</a>
+    <button class="hamburger-btn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="site-menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <div class="site-menu" id="site-menu">
+    <nav class="site-menu-nav">
+      <ul>
+        <li><a href="#accueil" class="is-active">Accueil</a></li>
+        <li><a href="#univers">Univers</a></li>
+        <li><a href="#drop">Drop</a></li>
+        <li><a href="archives.html">Archives</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <div class="socials">
+        <a href="#" target="_blank" rel="noopener">Instagram</a>
+        <a href="#" target="_blank" rel="noopener">TikTok</a>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Navigation à points : reflète et pilote la section courante pendant le scroll -->
+  <nav class="dot-nav" aria-label="Navigation par section">
+    <a href="#accueil" class="dot-nav-item is-active" data-dot="accueil"><span class="dot-nav-label">Accueil</span></a>
+    <a href="#univers" class="dot-nav-item" data-dot="univers"><span class="dot-nav-label">Univers</span></a>
+    <a href="#drop" class="dot-nav-item" data-dot="drop"><span class="dot-nav-label">Drop</span></a>
+    <a href="#contact" class="dot-nav-item" data-dot="contact"><span class="dot-nav-label">Contact</span></a>
+  </nav>
+
+  <!-- Fil de progression : ligne fixe + repère qui descend avec le scroll -->
+  <div class="progress-rail" aria-hidden="true">
+    <span class="progress-rail-marker"></span>
+  </div>
 
   <main>
 
-    <!-- HERO -->
-    <section class="hero">
+    <!-- SIGNATURE — chapitre d'ouverture, avant même le hero -->
+    <section id="marque" class="brand-intro scroll-section">
+      <h1 class="brand-intro-name signature-reveal">NOM DE LA MARQUE</h1>
+    </section>
+
+    <!-- ACCUEIL -->
+    <section id="accueil" class="hero scroll-section">
       <div class="hero-media grain"></div>
       <div class="hero-visual-frame parallax">
         <div class="placeholder-visual">
@@ -51,62 +72,264 @@
         </div>
       </div>
       <div class="hero-text">
-        <h1 class="hero-title">[PHRASE D'ACCROCHE<br />À ÉCRIRE ENSEMBLE]</h1>
+        <h2 class="hero-title">[PHRASE D'ACCROCHE<br />À ÉCRIRE ENSEMBLE]</h2>
         <p class="hero-sub">[PLACEHOLDER] Musique, sport, art — une seule vision.</p>
         <div class="btn-row">
-          <a href="drop.html" class="btn">Découvrir le drop</a>
-          <a href="contact.html" class="btn btn-outline">Rejoindre la liste d'attente</a>
+          <a href="#drop" class="btn">Découvrir le drop</a>
+          <a href="#contact" class="btn btn-outline">Rejoindre la liste d'attente</a>
         </div>
       </div>
     </section>
 
     <div class="divider"></div>
 
-    <!-- APERÇU DU DROP -->
-    <section class="reveal">
-      <div class="container">
-        <p class="section-label">Le drop en cours</p>
-        <h2 class="section-title">[NOM DU DROP]</h2>
-        <div class="drop-preview">
-          <div class="drop-preview-visual placeholder-visual curtain">
-            [PLACEHOLDER AFFICHE DROP]
-            <span class="curtain-veil"></span>
-          </div>
-          <div class="drop-preview-body">
-            <p class="section-label">[Date de sortie]</p>
-            <p class="section-text">
-              [PLACEHOLDER] Le thème du drop en une ou deux phrases fortes —
-              ce qu'il raconte, l'inspiration derrière les pièces.
-            </p>
-            <a href="drop.html" class="btn">Voir le drop</a>
-          </div>
+    <!-- UNIVERS -->
+    <div id="univers" class="page-section scroll-section">
+
+      <!-- NOTE D'INTENTION — texte de salle, à l'entrée de l'exposition -->
+      <section class="reveal">
+        <div class="container">
+          <p class="section-label">Note d'intention</p>
+          <h2 class="section-title">[CE QUE RACONTE LA MARQUE, EN UNE LIGNE]</h2>
+          <p class="wall-text">
+            [PLACEHOLDER — écrit à la première personne, court] Ce qu'on écoute,
+            ce qu'on pratique, ce qu'on regarde de trop près : trois carnets
+            qui finissent toujours par se retrouver dans la même pièce.
+            On ne vous explique pas la collection, on vous la montre.
+          </p>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <div class="divider"></div>
+      <div class="divider"></div>
 
-    <!-- APERÇU UNIVERS — teaser visuel cliquable vers la galerie -->
-    <section class="reveal">
-      <div class="container">
-        <p class="section-label">Dans la galerie</p>
-        <a href="univers.html" class="univers-teaser cursor-reveal-target">
-          <div class="univers-teaser-visual frame">
-            <div class="placeholder-visual" style="font-size:0.65rem;">
-              [PLACEHOLDER — VISUEL UNIVERS / EXTRAIT D'AFFICHE]
+      <!-- GALERIE — la pièce en cours, présentée comme une œuvre exposée -->
+      <section class="reveal">
+        <div class="container">
+          <p class="section-label">Galerie — N°01</p>
+          <h2 class="section-title">Pièce exposée</h2>
+
+          <div class="gallery-piece grain">
+            <div class="frame">
+              <div class="placeholder-visual">
+                [PLACEHOLDER — AFFICHE DU DROP EXPOSÉ]
+              </div>
+            </div>
+            <div class="cartel">
+              <p class="cartel-eyebrow">N°01 — [ANNÉE]</p>
+              <h3 class="cartel-title">[NOM DU DROP]</h3>
+              <p class="cartel-meta">[Matières / technique — ex : coton, laine, techniques mixtes]</p>
+              <p class="cartel-note">
+                [PLACEHOLDER — une phrase courte, façon note de commissaire,
+                pas un paragraphe explicatif.]
+              </p>
+              <a href="#drop" class="cartel-link">Visiter la pièce</a>
             </div>
           </div>
-          <div class="univers-teaser-body">
-            <h2 class="section-title">L'exposition permanente</h2>
-            <p class="wall-text">
-              [PLACEHOLDER] Ce qu'on écoute, ce qu'on pratique, ce qu'on
-              regarde de trop près — à visiter, pas à lire.
-            </p>
-            <span class="univers-teaser-link">Entrer dans la galerie <span class="arrow">→</span></span>
+
+          <p style="margin-top:20px;">
+            <a href="archives.html" class="gallery-link-out">Voir les pièces précédentes →</a>
+          </p>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- PIÈCE MAÎTRESSE — l'objet symbole, présenté en vitrine -->
+      <section class="reveal">
+        <div class="container">
+          <p class="section-label">Collection permanente</p>
+          <h2 class="section-title">Pièce maîtresse</h2>
+
+          <div class="gallery-piece gallery-piece--compact grain">
+            <div class="frame">
+              <div class="placeholder-visual" style="font-size:0.65rem;">
+                [VISUEL OBJET]
+              </div>
+            </div>
+            <div class="cartel">
+              <p class="cartel-eyebrow">Objet</p>
+              <h3 class="cartel-title">[NOM DE L'OBJET SYMBOLE]</h3>
+              <p class="cartel-note" style="max-width:420px;">
+                [PLACEHOLDER — une phrase courte : ce que l'objet représente,
+                pas son explication complète.]
+              </p>
+            </div>
           </div>
-        </a>
-      </div>
-    </section>
+        </div>
+      </section>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- DROP -->
+    <div id="drop" class="page-section scroll-section">
+
+      <section class="reveal">
+        <div class="container">
+          <p class="section-label">Drop en cours</p>
+          <h2 class="section-title">[NOM DU DROP]</h2>
+
+          <div class="drop-hero-visual placeholder-visual parallax">
+            Visuel du drop à venir
+          </div>
+
+          <p class="section-text">
+            [PLACEHOLDER] Le thème du drop expliqué : l'histoire derrière la
+            collection, ce qui l'a inspirée, ce qu'elle raconte visuellement.
+          </p>
+
+          <div class="drop-infos">
+            <div class="drop-info-item">
+              <p class="label">Sortie dans</p>
+              <div class="flip-countdown" data-countdown-target="2026-12-01T00:00:00">
+                <div class="flip-unit" data-unit="days">
+                  <div class="flip-card"><span class="flip-value">00</span></div>
+                  <span class="flip-label">Jours</span>
+                </div>
+                <div class="flip-unit" data-unit="hours">
+                  <div class="flip-card"><span class="flip-value">00</span></div>
+                  <span class="flip-label">Heures</span>
+                </div>
+                <div class="flip-unit" data-unit="minutes">
+                  <div class="flip-card"><span class="flip-value">00</span></div>
+                  <span class="flip-label">Min</span>
+                </div>
+                <div class="flip-unit" data-unit="seconds">
+                  <div class="flip-card"><span class="flip-value">00</span></div>
+                  <span class="flip-label">Sec</span>
+                </div>
+              </div>
+              <p class="form-note">[PLACEHOLDER — date cible 01/12/2026 à remplacer par la vraie date de sortie]</p>
+            </div>
+            <div class="drop-info-item">
+              <p class="label">Quantité</p>
+              <p class="value"><span class="count-up" data-count-to="48">0</span> pièces [PLACEHOLDER]</p>
+            </div>
+            <div class="drop-info-item">
+              <p class="label">Prix</p>
+              <p class="value">[XX €]</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section class="reveal">
+        <div class="container">
+          <p class="section-label">Galerie</p>
+          <h2 class="section-title">Les pièces</h2>
+          <div class="gallery">
+            <figure class="gallery-item">
+              <div class="gallery-item-visual curtain">
+                [Photo]
+                <span class="curtain-veil"></span>
+              </div>
+              <figcaption class="gallery-item-label">[Nom de la pièce 1]</figcaption>
+            </figure>
+            <figure class="gallery-item">
+              <div class="gallery-item-visual curtain">
+                [Photo]
+                <span class="curtain-veil"></span>
+              </div>
+              <figcaption class="gallery-item-label">[Nom de la pièce 2]</figcaption>
+            </figure>
+            <figure class="gallery-item">
+              <div class="gallery-item-visual curtain">
+                [Photo]
+                <span class="curtain-veil"></span>
+              </div>
+              <figcaption class="gallery-item-label">[Nom de la pièce 3]</figcaption>
+            </figure>
+            <figure class="gallery-item">
+              <div class="gallery-item-visual curtain">
+                [Photo]
+                <span class="curtain-veil"></span>
+              </div>
+              <figcaption class="gallery-item-label">[Nom de la pièce 4]</figcaption>
+            </figure>
+            <figure class="gallery-item">
+              <div class="gallery-item-visual curtain">
+                [Photo]
+                <span class="curtain-veil"></span>
+              </div>
+              <figcaption class="gallery-item-label">[Nom de la pièce 5]</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section class="reveal">
+        <div class="container" style="text-align:center;">
+          <h2 class="section-title">Ne rate pas la sortie</h2>
+          <p class="section-text" style="margin:0 auto 24px;">
+            [PLACEHOLDER] Rejoins la liste d'attente pour être prévenu·e dès
+            l'ouverture des ventes.
+          </p>
+          <a href="#contact" class="btn">Rejoindre la liste d'attente</a>
+        </div>
+      </section>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- CONTACT -->
+    <div id="contact" class="page-section scroll-section">
+      <section class="reveal">
+        <div class="container">
+          <p class="section-label">Contact / Newsletter</p>
+          <h2 class="section-title">Reste connecté·e</h2>
+          <p class="section-text">
+            [PLACEHOLDER] Laisse ton email pour être prévenu·e des prochains
+            drops en avant-première, ou suis-nous directement sur les réseaux.
+          </p>
+
+          <div class="contact-grid">
+            <div>
+              <!--
+                [PLACEHOLDER FORMULAIRE]
+                Remplacer "action" par ton endpoint Formspree
+                (https://formspree.io) une fois le compte créé,
+                ex: https://formspree.io/f/xxxxxxx
+                Alternative : remplacer tout le <form> par un embed Mailchimp.
+              -->
+              <form action="https://formspree.io/f/REMPLACER_PAR_VOTRE_ID" method="POST">
+                <div class="form-field">
+                  <label for="email">Email</label>
+                  <input type="email" id="email" name="email" placeholder="ton@email.com" required />
+                </div>
+                <div class="form-field">
+                  <label for="reseau">Réseau préféré (optionnel)</label>
+                  <select id="reseau" name="reseau">
+                    <option value="">Sélectionner...</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="tiktok">TikTok</option>
+                    <option value="email">Email</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn">S'inscrire à la liste d'attente</button>
+                <p class="form-note">
+                  [PLACEHOLDER] En t'inscrivant, tu acceptes de recevoir des
+                  emails de [NOM DE LA MARQUE]. Aucun spam, promis.
+                </p>
+              </form>
+            </div>
+
+            <div>
+              <p class="section-label">Retrouve-nous</p>
+              <div class="social-list">
+                <a href="#" target="_blank" rel="noopener">Instagram →</a>
+                <a href="#" target="_blank" rel="noopener">TikTok →</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
 
   </main>
 
@@ -118,5 +341,8 @@
   </footer>
 
   <script src="js/script.js"></script>
+  <!-- Bundle React/Three.js buildé depuis src/shader-bg/ via `npm run build:shader`
+       (voir vite.config.js) — monte le fond animé dans #shader-bg. -->
+  <script defer src="js/shader-bg.bundle.js"></script>
 </body>
 </html>

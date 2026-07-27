@@ -18,31 +18,32 @@
 </head>
 <body>
 
-  <header class="site-header">
-    <div class="container">
-      <a href="index.html" class="logo">[NOM MARQUE]</a>
-      <button class="nav-toggle" aria-label="Ouvrir le menu" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
-      <nav class="main-nav">
-        <ul>
-          <li><a href="index.html">Accueil</a></li>
-          <li><a href="univers.html">Univers</a></li>
-          <li><a href="drop.html">Drop</a></li>
-          <li><a href="archives.html" class="is-active">Archives</a></li>
-          <li><a href="contact.html">Contact</a></li>
-        </ul>
-        <div class="socials">
-          <a href="#" target="_blank" rel="noopener">Instagram</a>
-          <a href="#" target="_blank" rel="noopener">TikTok</a>
-        </div>
-      </nav>
-    </div>
-  </header>
+  <div class="floating-nav">
+    <a href="index.html" class="floating-logo">[NOM MARQUE]</a>
+    <button class="hamburger-btn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="site-menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <div class="site-menu" id="site-menu">
+    <nav class="site-menu-nav">
+      <ul>
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="index.html#univers">Univers</a></li>
+        <li><a href="index.html#drop">Drop</a></li>
+        <li><a href="archives.html" class="is-active">Archives</a></li>
+        <li><a href="index.html#contact">Contact</a></li>
+      </ul>
+      <div class="socials">
+        <a href="#" target="_blank" rel="noopener">Instagram</a>
+        <a href="#" target="_blank" rel="noopener">TikTok</a>
+      </div>
+    </nav>
+  </div>
 
   <main>
 
-    <section class="reveal" style="padding-top:48px;">
+    <section class="reveal" style="padding-top:96px;">
       <div class="container">
         <p class="section-label">Archives</p>
         <h1 class="section-title">Les drops précédents</h1>

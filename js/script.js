@@ -55,29 +55,41 @@
 })();
 
 document.addEventListener("DOMContentLoaded", () => {
-  const toggle = document.querySelector(".nav-toggle");
-  const nav = document.querySelector(".main-nav");
+  const toggle = document.querySelector(".hamburger-btn");
+  const menu = document.querySelector(".site-menu");
 
-  if (!toggle || !nav) return;
+  if (!toggle || !menu) return;
+
+  function closeMenu() {
+    menu.classList.remove("is-open");
+    toggle.classList.remove("is-open");
+    toggle.setAttribute("aria-expanded", "false");
+  }
 
   toggle.addEventListener("click", () => {
-    const isOpen = nav.classList.toggle("is-open");
+    const isOpen = menu.classList.toggle("is-open");
     toggle.classList.toggle("is-open", isOpen);
     toggle.setAttribute("aria-expanded", String(isOpen));
   });
 
-  nav.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", () => {
-      nav.classList.remove("is-open");
-      toggle.classList.remove("is-open");
-      toggle.setAttribute("aria-expanded", "false");
-    });
+  menu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", closeMenu);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && menu.classList.contains("is-open")) {
+      closeMenu();
+      toggle.focus();
+    }
   });
 });
 
 // Scroll reveals: sections fade up (.reveal) and product/drop images
 // slide their curtain away (.curtain) the first time they enter the
-// viewport. Runs once per element, then stops observing it.
+// viewport. Runs once per element, then stops observing it. (The
+// opening signature has its own plain CSS animation — see .signature-reveal
+// in css/style.css — since it's always visible at load and doesn't need
+// scroll-triggering.)
 (() => {
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const targets = document.querySelectorAll(".reveal, .curtain");
@@ -102,40 +114,93 @@ document.addEventListener("DOMContentLoaded", () => {
   targets.forEach((el) => observer.observe(el));
 })();
 
-// Subtle parallax on the big hero/poster visuals: they drift a small,
-// clamped amount opposite the scroll direction as they cross the
-// viewport, so they read as slightly slower/deeper than the rest of the
-// page rather than pinned flat to it.
+// Parallax on the big hero/poster visuals: a scroll-driven vertical drift
+// (all `.parallax` elements) plus, for the hero's visual specifically, a
+// mouse-driven offset. Both write to the same element's `transform`, so
+// they're tracked as separate state per element and combined in one
+// `render()` call rather than each independently overwriting the style
+// (which would make them fight over the property).
 (() => {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
   const targets = document.querySelectorAll(".parallax");
   if (!targets.length) return;
 
-  let ticking = false;
+  const state = new Map();
+  targets.forEach((el) => state.set(el, { scrollY: 0, mouseX: 0, mouseY: 0 }));
 
-  function update() {
+  function render(el) {
+    const s = state.get(el);
+    el.style.transform = `translate(${s.mouseX}px, ${s.scrollY + s.mouseY}px)`;
+  }
+
+  // Scroll drift: a small, clamped amount opposite the scroll direction
+  // as each visual crosses the viewport, so it reads as slightly
+  // slower/deeper than the rest of the page rather than pinned flat to it.
+  let scrollTicking = false;
+
+  function updateScroll() {
     const viewportCenter = window.innerHeight / 2;
     targets.forEach((el) => {
       const rect = el.getBoundingClientRect();
       const elementCenter = rect.top + rect.height / 2;
       const distance = elementCenter - viewportCenter;
-      const offset = Math.max(-24, Math.min(24, distance * -0.08));
-      el.style.transform = `translateY(${offset}px)`;
+      state.get(el).scrollY = Math.max(-24, Math.min(24, distance * -0.08));
+      render(el);
     });
-    ticking = false;
+    scrollTicking = false;
   }
 
   function onScroll() {
-    if (!ticking) {
-      window.requestAnimationFrame(update);
-      ticking = true;
+    if (!scrollTicking) {
+      window.requestAnimationFrame(updateScroll);
+      scrollTicking = true;
     }
   }
 
-  update();
+  updateScroll();
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onScroll);
+
+  // Mouse drift: hero only. The visual eases toward a target offset that
+  // moves opposite the cursor (like a window shifting to reveal what's
+  // "behind" it as your viewpoint moves), instead of tracking the mouse
+  // directly — the easing is what keeps it feeling fluid/damped rather
+  // than a raw, instant follow.
+  const hero = document.querySelector(".hero");
+  const heroVisual = document.querySelector(".hero-visual-frame");
+
+  if (hero && heroVisual && state.has(heroVisual)) {
+    const MAX_OFFSET = 10; // px — subtle, not an exaggerated tilt
+    const EASE = 0.08; // lower = softer/laggier follow
+    let targetX = 0;
+    let targetY = 0;
+    let currentX = 0;
+    let currentY = 0;
+
+    hero.addEventListener("mousemove", (event) => {
+      const rect = hero.getBoundingClientRect();
+      const relX = (event.clientX - rect.left) / rect.width - 0.5;
+      const relY = (event.clientY - rect.top) / rect.height - 0.5;
+      targetX = -relX * MAX_OFFSET * 2;
+      targetY = -relY * MAX_OFFSET * 2;
+    });
+
+    hero.addEventListener("mouseleave", () => {
+      targetX = 0;
+      targetY = 0;
+    });
+
+    (function tick() {
+      currentX += (targetX - currentX) * EASE;
+      currentY += (targetY - currentY) * EASE;
+      const s = state.get(heroVisual);
+      s.mouseX = currentX;
+      s.mouseY = currentY;
+      render(heroVisual);
+      window.requestAnimationFrame(tick);
+    })();
+  }
 })();
 
 // Custom "Voir" cursor over clickable image cards (.cursor-reveal-target).
@@ -258,4 +323,62 @@ document.addEventListener("DOMContentLoaded", () => {
 
   tick();
   window.setInterval(tick, 1000);
+})();
+
+// Scrollspy: keeps the dot nav and the top nav's "current section"
+// highlight in sync with whichever major section is centred in the
+// viewport.
+(() => {
+  const sections = document.querySelectorAll(".scroll-section");
+  const dots = document.querySelectorAll(".dot-nav-item");
+  if (!sections.length || !dots.length || !("IntersectionObserver" in window)) return;
+
+  const navLinks = document.querySelectorAll('.site-menu-nav a[href^="#"]');
+
+  function setActive(id) {
+    dots.forEach((dot) => dot.classList.toggle("is-active", dot.dataset.dot === id));
+    navLinks.forEach((link) => link.classList.toggle("is-active", link.getAttribute("href") === `#${id}`));
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) setActive(entry.target.id);
+      });
+    },
+    { rootMargin: "-45% 0px -45% 0px", threshold: 0 }
+  );
+
+  sections.forEach((section) => observer.observe(section));
+})();
+
+// Progress rail: slides the marker down the fixed vertical line in step
+// with how far through the document the user has scrolled (0% at the
+// very top, 100% at the very bottom). Not gated behind
+// prefers-reduced-motion — like the adaptive text colour, this tracks
+// scroll position directly rather than playing an independent animation.
+(() => {
+  const marker = document.querySelector(".progress-rail-marker");
+  if (!marker) return;
+
+  let ticking = false;
+
+  function update() {
+    const doc = document.documentElement;
+    const maxScroll = doc.scrollHeight - window.innerHeight;
+    const progress = maxScroll > 0 ? Math.min(1, Math.max(0, window.scrollY / maxScroll)) : 0;
+    marker.style.top = `${progress * 100}%`;
+    ticking = false;
+  }
+
+  function onScroll() {
+    if (!ticking) {
+      window.requestAnimationFrame(update);
+      ticking = true;
+    }
+  }
+
+  update();
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
 })();
