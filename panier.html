@@ -4,22 +4,24 @@
   <meta charset="UTF-8" />
   <script>document.documentElement.classList.add('js');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Archives — [NOM DE LA MARQUE]</title>
-  <meta name="description" content="Les anciens drops de [NOM DE LA MARQUE]." />
+  <title>Panier — [NOM DE LA MARQUE]</title>
+  <meta name="description" content="[PLACEHOLDER] Le panier — articles ajoutés, quantités et total." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Merriweather:wght@700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
   <link rel="preload" as="style" href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
   <noscript>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Merriweather:wght@700&display=swap" rel="stylesheet" />
     <link href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap" rel="stylesheet" />
   </noscript>
   <link rel="stylesheet" href="css/style.css" />
 </head>
-<body>
+<body class="scrollytelling static-shader-page">
+
+  <div id="shader-bg" class="site-shader-bg" data-shader-variant="static" aria-hidden="true"></div>
 
   <div class="floating-nav">
-    <a href="index.html" class="floating-logo">[NOM MARQUE]</a>
+    <a href="index.html#accueil" class="floating-logo">[NOM MARQUE]</a>
     <div class="nav-actions">
       <a href="panier.html" class="cart-btn" data-cart-btn aria-label="Panier">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -37,10 +39,10 @@
   <div class="site-menu" id="site-menu">
     <nav class="site-menu-nav">
       <ul>
-        <li><a href="index.html">Accueil</a></li>
+        <li><a href="index.html#accueil">Accueil</a></li>
         <li><a href="index.html#univers">Univers</a></li>
         <li><a href="index.html#drop">Drop</a></li>
-        <li><a href="archives.html" class="is-active">Archives</a></li>
+        <li><a href="archives.html">Archives</a></li>
         <li><a href="index.html#contact">Contact</a></li>
       </ul>
       <div class="socials">
@@ -51,37 +53,26 @@
   </div>
 
   <main>
-
-    <section class="reveal" style="padding-top:96px;">
+    <section class="reveal" style="padding-top:120px;">
       <div class="container">
-        <p class="section-label">Archives</p>
-        <h1 class="section-title">Les drops précédents</h1>
+        <p class="section-label">Panier</p>
+        <h1 class="section-title">Ton panier</h1>
 
-        <!--
-          [STRUCTURE PRÊTE POUR V2]
-          Une fois un premier drop passé, dupliquer le bloc ci-dessous
-          (à transformer en carte cliquable vers une page dédiée par drop) :
+        <div class="cart-empty" data-cart-empty hidden>
+          <p>Ton panier est vide.</p>
+          <a href="index.html#drop" class="btn">Découvrir le drop</a>
+        </div>
 
-          <div class="drop-preview">
-            <div class="drop-preview-visual placeholder-visual">[Affiche du drop]</div>
-            <div class="drop-preview-body">
-              <p class="section-label">[Nom du drop] — [Date]</p>
-              <p class="section-text">[Résumé du thème]</p>
-            </div>
+        <div data-cart-content>
+          <div class="cart-list" data-cart-list></div>
+
+          <div class="cart-summary">
+            <p class="cart-grand-total">Total : <strong data-cart-grand-total>0</strong> €</p>
+            <button type="button" class="btn" data-cart-checkout-btn>Payer</button>
           </div>
-        -->
-
-        <div class="archives-empty">
-          <p class="section-label" style="margin-bottom:0;">Bientôt disponible</p>
-          <p>
-            [PLACEHOLDER] Le premier drop n'est pas encore passé — cette page
-            accueillera l'historique des collections une fois les premières
-            sorties effectuées.
-          </p>
         </div>
       </div>
     </section>
-
   </main>
 
   <footer class="site-footer">
@@ -92,5 +83,8 @@
   </footer>
 
   <script src="js/script.js"></script>
+  <!-- Bundle React/Three.js buildé depuis src/shader-bg/ via `npm run build:shader`
+       (voir vite.config.js) — monte le fond animé dans #shader-bg. -->
+  <script defer src="js/shader-bg.bundle.js"></script>
 </body>
 </html>

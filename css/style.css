@@ -277,6 +277,58 @@ ul {
   transition: color 0.2s ease;
 }
 
+/* Groups the cart icon and the hamburger together as the nav's right-hand
+   side, so `.floating-nav`'s space-between still just splits into two
+   halves (logo / actions) instead of drifting the cart into the middle. */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Permanently visible cart entry point (not a real link/drawer yet).
+   Same adaptive --text token as the rest of the floating nav. */
+.cart-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  /* Fixed dark-navy/white pairing (not the adaptive --text/--ink tokens)
+     so the badge itself reads the same small "chip" regardless of which
+     page/background it floats over, with a thin light ring to keep it
+     from disappearing into the darkest part of the scrollytelling
+     gradient. */
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  line-height: 1;
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.5);
+}
+
+.cart-badge[hidden] {
+  display: none;
+}
+
 /* The hamburger doubles as the close control: its three bars morph into
    an X (via .is-open) instead of a separate close button. */
 .hamburger-btn {
@@ -766,6 +818,44 @@ html.js .signature-reveal {
   gap: 14px;
 }
 
+/* Discreet toast (e.g. "Ajouté au panier"): created on demand by
+   script.js's showToast(), not present in any page's markup. Same glass
+   fill/border as .btn so it reads as part of the same design language,
+   fades/rises in on `.is-visible` and back out again on its own. */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  z-index: 400;
+  padding: 14px 22px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px -12px rgba(7, 27, 51, 0.45);
+  color: var(--text);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 12px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    transition: opacity 0.25s ease;
+    transform: translate(-50%, 0);
+  }
+}
+
 /* ---------- Sections ---------- */
 
 /* Generous, cinematic breathing room instead of a densely packed page. */
@@ -1048,6 +1138,13 @@ section {
   grid-template-columns: repeat(2, 1fr);
 }
 
+/* The whole card is the link (produit.html) — no separate "Voir" label
+   or button on top of it. The only hover affordance is the image
+   zooming slightly within its frame (.gallery-item-visual clips via the
+   .curtain class it already carries; .gallery-item-photo is the layer
+   that actually scales, kept separate so the zoom can't grow past the
+   frame's rounded corners). Cursor is just the browser's native pointer
+   for an <a> — nothing overrides it. */
 .gallery-item {
   display: flex;
   flex-direction: column;
@@ -1057,11 +1154,16 @@ section {
 .gallery-item-visual {
   aspect-ratio: 1;
   border-radius: var(--radius-sm);
-  background-color: var(--surface);
-  background-image: linear-gradient(160deg, var(--surface) 0%, #dfe3ec 100%);
+}
+
+.gallery-item-photo {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: var(--surface);
+  background-image: linear-gradient(160deg, var(--surface) 0%, #dfe3ec 100%);
   color: var(--ink-muted);
   font-family: var(--font-display);
   text-transform: uppercase;
@@ -1069,12 +1171,11 @@ section {
   letter-spacing: 0.05em;
   text-align: center;
   padding: 12px;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.3s ease;
 }
 
-.gallery-item:hover .gallery-item-visual {
-  transform: translateY(-4px);
-  box-shadow: 0 18px 32px -20px rgba(27, 42, 74, 0.3);
+.gallery-item:hover .gallery-item-photo {
+  transform: scale(1.06);
 }
 
 .gallery-item-label {
@@ -1088,6 +1189,363 @@ section {
   .gallery {
     grid-template-columns: repeat(3, 1fr);
   }
+}
+
+/* ---------- Product page ---------- */
+
+.product-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+@media (min-width: 760px) {
+  .product-layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 56px;
+  }
+}
+
+/* Reuses .frame (bordered, rounded, lit rectangle) — same "framed piece"
+   treatment as the gallery/exhibition pieces — just sized for a single
+   large product shot. */
+.product-visual {
+  aspect-ratio: 3 / 4;
+  width: 100%;
+}
+
+@media (min-width: 760px) {
+  .product-visual {
+    flex: 1 1 50%;
+    max-width: 460px;
+  }
+}
+
+.product-info {
+  flex: 1 1 50%;
+}
+
+.product-price {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.selectors-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 32px;
+  margin: 28px 0 8px;
+}
+
+.size-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Same glass tokens as .size-option/.btn again — the "-"/"+" stepper
+   reads as one continuous outline control rather than two separate
+   buttons either side of a number. */
+.quantity-selector {
+  display: inline-flex;
+  align-items: stretch;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.quantity-btn {
+  width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.quantity-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.quantity-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.quantity-value {
+  min-width: 40px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+}
+
+/* Same glass tokens as .btn/.btn-outline — a size button reads as
+   "outline" (unselected) or "filled" (selected) using the exact same
+   fill/border pairing those already use, rather than inventing a new
+   selected/unselected language. */
+.size-option {
+  min-width: 56px;
+  padding: 14px 18px;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, backdrop-filter 0.2s ease;
+}
+
+.size-option:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.size-option.is-selected {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px -12px rgba(7, 27, 51, 0.45);
+}
+
+/* .form-note's default --ink-muted assumes a light card background;
+   this page sits directly on the dark gradient like .contact-grid does,
+   so it needs the same light-text override. */
+.product-info .form-note {
+  color: var(--text-muted);
+}
+
+.product-total {
+  font-size: 0.95rem;
+  color: var(--text-muted-strong);
+  margin: 4px 0 24px;
+}
+
+.product-total strong {
+  font-family: var(--font-display);
+  color: var(--text);
+}
+
+.product-actions {
+  margin-top: 28px;
+}
+
+/* ---------- Cart page ---------- */
+
+/* Same dashed, adaptive-text empty state as .archives-empty, but this
+   page sits directly on the dark gradient (like .contact-grid/.product-
+   info above) rather than the light paper page archives.html uses, so
+   it needs the --text-rgb-based tokens instead of the fixed --ink ones. */
+.cart-empty {
+  border: 1px dashed rgba(var(--text-rgb), 0.25);
+  border-radius: var(--radius-md);
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.cart-empty p {
+  max-width: 420px;
+  margin: 0 auto 20px;
+  color: var(--text-muted-strong);
+}
+
+.cart-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 32px 0;
+}
+
+/* Each line item reuses the light --surface "card" treatment already
+   used for gallery/exhibition pieces — rounded corners, same border —
+   rather than sitting directly on the dark gradient like the rest of
+   this page's text does. */
+.cart-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid rgba(27, 42, 74, 0.08);
+  border-radius: var(--radius-md);
+}
+
+.cart-item-info {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.cart-item-name {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.cart-item-size {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-top: 4px;
+}
+
+/* The quantity stepper's default .quantity-selector/.quantity-btn tokens
+   assume it sits directly on the dark gradient (white glass fill/text) —
+   inside this light card it needs the ink-based equivalent instead. */
+.cart-item .quantity-selector {
+  border-color: rgba(27, 42, 74, 0.2);
+  background: rgba(27, 42, 74, 0.04);
+}
+
+.cart-item .quantity-btn,
+.cart-item .quantity-value {
+  color: var(--ink);
+}
+
+.cart-item .quantity-btn:hover:not(:disabled) {
+  background: rgba(27, 42, 74, 0.08);
+}
+
+.cart-item-price,
+.cart-item-total {
+  flex: 0 0 auto;
+  min-width: 70px;
+  font-family: var(--font-display);
+  color: var(--ink);
+  text-align: right;
+}
+
+.cart-item-total {
+  min-width: 80px;
+}
+
+.cart-item-remove {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.cart-item-remove:hover {
+  color: var(--ink);
+}
+
+.cart-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(var(--text-rgb), 0.15);
+}
+
+.cart-grand-total {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  text-transform: uppercase;
+}
+
+/* ---------- Static shader page contrast fix (produit/panier) ---------- */
+/* produit.html and panier.html (body.static-shader-page) render the
+   "static" ShaderGradient variant — a brighter, more uniform blue than
+   index.html's original gradient (which ranges from near-white to
+   near-black). The white text / translucent-white-glass tokens .btn,
+   .size-option, .quantity-selector and the floating nav icons all use
+   elsewhere were tuned for that much darker range and don't have
+   reliable contrast against this specific blue: solid light fill + dark
+   ink text reads clearly against any point in it, which a lighter/more
+   transparent glass tweak wouldn't guarantee. Scoped to this body class
+   only — index.html/archives.html keep their existing look. */
+.static-shader-page .btn,
+.static-shader-page .size-option {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(255, 255, 255, 0.95);
+  color: var(--ink);
+  box-shadow: 0 8px 24px -12px rgba(7, 27, 51, 0.35);
+}
+
+.static-shader-page .btn:hover,
+.static-shader-page .size-option:hover {
+  background: #fff;
+  border-color: #fff;
+}
+
+.static-shader-page .size-option.is-selected {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Only the stepper sitting directly on the shader background (produit.html's
+   own size/quantity row) — panier.html's per-line stepper already lives
+   inside a light .cart-item card via its own .cart-item .quantity-selector
+   override and is unaffected by this. */
+.static-shader-page .selectors-row .quantity-selector {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(255, 255, 255, 0.95);
+}
+
+.static-shader-page .selectors-row .quantity-btn,
+.static-shader-page .selectors-row .quantity-value {
+  color: var(--ink);
+}
+
+.static-shader-page .selectors-row .quantity-btn:hover:not(:disabled) {
+  background: rgba(27, 42, 74, 0.08);
+}
+
+.static-shader-page .floating-logo,
+.static-shader-page .cart-btn {
+  color: var(--ink);
+}
+
+/* While the menu is open, .floating-nav (z-index 250) still floats above
+   .site-menu's own dark overlay (z-index 220) — so the logo/cart icon
+   are now sitting on that dark panel, not the blue shader, and need to
+   go back to their normal light --text instead of the ink override
+   above. body.menu-open is toggled by script.js alongside .is-open. */
+.static-shader-page.menu-open .floating-logo,
+.static-shader-page.menu-open .cart-btn {
+  color: var(--text);
+}
+
+/* :not(.is-open) — once open, the bars morph into the close "X" sitting
+   over .site-menu's own dark overlay, not the shader background, and
+   need to stay white there (its existing default), not ink. */
+.static-shader-page .hamburger-btn:not(.is-open) span {
+  background: var(--ink);
 }
 
 /* ---------- Archives page ---------- */
@@ -1204,48 +1662,6 @@ section {
   }
 }
 
-/* ---------- Custom cursor ("Voir") on clickable image cards ---------- */
-/* Desktop / fine-pointer only — created by script.js, which also checks
-   for a real mouse before touching anything here. */
-.custom-cursor {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 64px;
-  height: 64px;
-  margin: -32px 0 0 -32px;
-  border-radius: 50%;
-  background: var(--ink);
-  color: var(--paper);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  text-transform: uppercase;
-  font-size: 0.7rem;
-  letter-spacing: 0.05em;
-  opacity: 0;
-  transform: scale(0.6);
-  transition: opacity 0.25s ease, transform 0.25s ease;
-  pointer-events: none;
-  z-index: 300;
-}
-
-.custom-cursor.is-active {
-  opacity: 1;
-  transform: scale(1);
-}
-
-html.js .cursor-reveal-target {
-  cursor: none;
-}
-
-@media (hover: none), (pointer: coarse) {
-  .custom-cursor {
-    display: none !important;
-  }
-}
-
 /* ---------- Flip countdown (drop release date) ---------- */
 /* Each unit shows the current value; script.js flips it (a quick rotateX)
    only on the tick where the number actually changes. */
@@ -1325,7 +1741,7 @@ html.js .flip-value.is-flipping {
   .btn-outline:hover,
   .drop-preview:hover,
   .gallery-piece:hover,
-  .gallery-item:hover .gallery-item-visual,
+  .gallery-item:hover .gallery-item-photo,
   .gallery-piece:hover .frame .placeholder-visual {
     transform: none;
   }

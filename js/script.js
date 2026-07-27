@@ -64,12 +64,17 @@ document.addEventListener("DOMContentLoaded", () => {
     menu.classList.remove("is-open");
     toggle.classList.remove("is-open");
     toggle.setAttribute("aria-expanded", "false");
+    document.body.classList.remove("menu-open");
   }
 
   toggle.addEventListener("click", () => {
     const isOpen = menu.classList.toggle("is-open");
     toggle.classList.toggle("is-open", isOpen);
     toggle.setAttribute("aria-expanded", String(isOpen));
+    // Lets .static-shader-page's dark-ink header icons (tuned to contrast
+    // against the blue shader) switch back to their normal light --text
+    // while the menu's own dark overlay is what's actually behind them.
+    document.body.classList.toggle("menu-open", isOpen);
   });
 
   menu.querySelectorAll("a").forEach((link) => {
@@ -83,6 +88,95 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+// Global cart: sessionStorage-backed (not a plain in-memory variable),
+// since the site is multi-page — a variable would reset on every
+// navigation between index.html/produit.html/archives.html, defeating
+// "accessible from any page". sessionStorage still needs no backend and
+// clears itself once the tab closes. Declared at the top level (not
+// inside an IIFE) so both the header badge below and produit.html's
+// "Ajouter au panier" handler further down the file can call it.
+const Cart = (() => {
+  const STORAGE_KEY = "cart";
+
+  function read() {
+    try {
+      const parsed = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  // Shared by add/remove/setQuantity: writes the array back, then
+  // refreshes the header badge either way — even if storage failed
+  // (unavailable/full), the in-memory change for this render still
+  // applies, it just won't survive a navigation.
+  function persist(items) {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    } catch (error) {
+      // Ignored — see comment above.
+    }
+    renderBadge();
+  }
+
+  function add(item) {
+    const items = read();
+    items.push(item);
+    persist(items);
+  }
+
+  function remove(index) {
+    const items = read();
+    items.splice(index, 1);
+    persist(items);
+  }
+
+  // No "total" field is kept in storage — every reader recomputes
+  // unitPrice * quantity itself, so there's nothing to fall out of sync
+  // when the quantity changes here.
+  function setQuantity(index, quantity) {
+    const items = read();
+    if (!items[index]) return;
+    items[index].quantity = quantity;
+    persist(items);
+  }
+
+  function count() {
+    return read().reduce((total, item) => total + (item.quantity || 1), 0);
+  }
+
+  function renderBadge() {
+    const badge = document.querySelector("[data-cart-badge]");
+    if (!badge) return;
+    const total = count();
+    badge.textContent = total;
+    badge.hidden = total === 0;
+  }
+
+  return { read, add, remove, setQuantity, count, renderBadge };
+})();
+
+Cart.renderBadge();
+
+// Toast: a small, self-dismissing notification (e.g. "Ajouté au
+// panier"), built and appended on demand rather than living in every
+// page's markup, since only pages that actually call this need it.
+function showToast(message) {
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.setAttribute("role", "status");
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  window.requestAnimationFrame(() => toast.classList.add("is-visible"));
+
+  window.setTimeout(() => {
+    toast.classList.remove("is-visible");
+    window.setTimeout(() => toast.remove(), 300);
+  }, 2200);
+}
 
 // Scroll reveals: sections fade up (.reveal) and product/drop images
 // slide their curtain away (.curtain) the first time they enter the
@@ -201,31 +295,6 @@ document.addEventListener("DOMContentLoaded", () => {
       window.requestAnimationFrame(tick);
     })();
   }
-})();
-
-// Custom "Voir" cursor over clickable image cards (.cursor-reveal-target).
-// Skipped entirely on touch/coarse-pointer devices, where a hover cursor
-// makes no sense.
-(() => {
-  const supportsFineHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-  const targets = document.querySelectorAll(".cursor-reveal-target");
-  if (!supportsFineHover || !targets.length) return;
-
-  const cursor = document.createElement("div");
-  cursor.className = "custom-cursor";
-  cursor.innerHTML = "<span>Voir</span>";
-  cursor.setAttribute("aria-hidden", "true");
-  document.body.appendChild(cursor);
-
-  window.addEventListener("mousemove", (event) => {
-    cursor.style.left = `${event.clientX}px`;
-    cursor.style.top = `${event.clientY}px`;
-  });
-
-  targets.forEach((target) => {
-    target.addEventListener("mouseenter", () => cursor.classList.add("is-active"));
-    target.addEventListener("mouseleave", () => cursor.classList.remove("is-active"));
-  });
 })();
 
 // Count-up stat: any ".count-up" span counts from 0 to its data-count-to
@@ -381,4 +450,195 @@ document.addEventListener("DOMContentLoaded", () => {
   update();
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onScroll);
+})();
+
+// Product page: size selector (S/M/L/XL, one active at a time), the
+// quantity stepper (min 1, max 10, keeps the total price and the
+// "X pièce(s)" wording in sync), and "Ajouter au panier". Clicking it
+// without a size picked just surfaces the inline note asking for one;
+// with a size picked, it stores the line item in the global Cart and
+// shows the toast. Only present on produit.html — everywhere else these
+// selectors come back empty and the block no-ops.
+(() => {
+  const selector = document.querySelector("[data-size-selector]");
+  const addToCartBtn = document.querySelector("[data-add-to-cart-btn]");
+  if (!selector || !addToCartBtn) return;
+
+  const options = Array.from(selector.querySelectorAll(".size-option"));
+  const note = document.querySelector("[data-size-note]");
+  let selectedSize = null;
+
+  options.forEach((option) => {
+    option.setAttribute("aria-pressed", "false");
+    option.addEventListener("click", () => {
+      options.forEach((o) => {
+        o.classList.remove("is-selected");
+        o.setAttribute("aria-pressed", "false");
+      });
+      option.classList.add("is-selected");
+      option.setAttribute("aria-pressed", "true");
+      selectedSize = option.dataset.size;
+      if (note) note.hidden = true;
+    });
+  });
+
+  const MIN_QUANTITY = 1;
+  const MAX_QUANTITY = 10;
+  let quantity = MIN_QUANTITY;
+
+  const decreaseBtn = document.querySelector("[data-quantity-decrease]");
+  const increaseBtn = document.querySelector("[data-quantity-increase]");
+  const quantityValueEl = document.querySelector("[data-quantity-value]");
+  const quantityEchoEls = document.querySelectorAll("[data-quantity-echo]");
+  const quantityPluralEls = document.querySelectorAll("[data-quantity-plural]");
+  const unitPriceEl = document.querySelector("[data-unit-price]");
+  const totalPriceEl = document.querySelector("[data-total-price]");
+  const unitPrice = unitPriceEl ? parseFloat(unitPriceEl.dataset.unitPrice) : NaN;
+
+  function updateQuantityUI() {
+    if (quantityValueEl) quantityValueEl.textContent = quantity;
+    if (decreaseBtn) decreaseBtn.disabled = quantity <= MIN_QUANTITY;
+    if (increaseBtn) increaseBtn.disabled = quantity >= MAX_QUANTITY;
+    quantityEchoEls.forEach((el) => {
+      el.textContent = quantity;
+    });
+    quantityPluralEls.forEach((el) => {
+      el.hidden = quantity <= 1;
+    });
+    if (totalPriceEl && Number.isFinite(unitPrice)) {
+      totalPriceEl.textContent = unitPrice * quantity;
+    }
+  }
+
+  if (decreaseBtn && increaseBtn) {
+    decreaseBtn.addEventListener("click", () => {
+      quantity = Math.max(MIN_QUANTITY, quantity - 1);
+      updateQuantityUI();
+    });
+    increaseBtn.addEventListener("click", () => {
+      quantity = Math.min(MAX_QUANTITY, quantity + 1);
+      updateQuantityUI();
+    });
+    updateQuantityUI();
+  }
+
+  const nameEl = document.querySelector(".product-info h1");
+
+  addToCartBtn.addEventListener("click", () => {
+    if (!selectedSize) {
+      if (note) note.hidden = false;
+      return;
+    }
+
+    Cart.add({
+      name: nameEl ? nameEl.textContent.trim() : "Produit",
+      size: selectedSize,
+      quantity,
+      unitPrice: Number.isFinite(unitPrice) ? unitPrice : null,
+    });
+
+    showToast("Ajouté au panier");
+  });
+})();
+
+// Cart page: renders every line item from the global Cart, lets each be
+// adjusted (quantity, min 1 / max 10 — same bounds as the product page's
+// own stepper) or removed, and recomputes the grand total on every
+// change. Shows the empty state instead of a blank list when there's
+// nothing in it. "Payer" here is the real checkout action (as opposed to
+// produit.html's "Ajouter au panier") but is still just a placeholder —
+// no Shopify integration yet. Only present on panier.html.
+(() => {
+  const list = document.querySelector("[data-cart-list]");
+  if (!list) return;
+
+  const emptyEl = document.querySelector("[data-cart-empty]");
+  const contentEl = document.querySelector("[data-cart-content]");
+  const grandTotalEl = document.querySelector("[data-cart-grand-total]");
+  const checkoutBtn = document.querySelector("[data-cart-checkout-btn]");
+
+  const MIN_QUANTITY = 1;
+  const MAX_QUANTITY = 10;
+
+  function escapeHtml(value) {
+    const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+    return String(value).replace(/[&<>"']/g, (ch) => map[ch]);
+  }
+
+  function lineTotal(item) {
+    return Number.isFinite(item.unitPrice) ? item.unitPrice * item.quantity : null;
+  }
+
+  function render() {
+    const items = Cart.read();
+
+    if (emptyEl) emptyEl.hidden = items.length > 0;
+    if (contentEl) contentEl.hidden = items.length === 0;
+
+    list.innerHTML = "";
+    let grandTotal = 0;
+    let hasUnknownPrice = false;
+
+    items.forEach((item, index) => {
+      const total = lineTotal(item);
+      if (total === null) {
+        hasUnknownPrice = true;
+      } else {
+        grandTotal += total;
+      }
+
+      const row = document.createElement("div");
+      row.className = "cart-item";
+      row.innerHTML = `
+        <div class="cart-item-info">
+          <p class="cart-item-name">${escapeHtml(item.name)}</p>
+          <p class="cart-item-size">Taille ${escapeHtml(item.size)}</p>
+        </div>
+        <div class="quantity-selector" role="group" aria-label="Modifier la quantité">
+          <button type="button" class="quantity-btn" data-action="decrease" aria-label="Diminuer la quantité" ${item.quantity <= MIN_QUANTITY ? "disabled" : ""}>&minus;</button>
+          <span class="quantity-value">${item.quantity}</span>
+          <button type="button" class="quantity-btn" data-action="increase" aria-label="Augmenter la quantité" ${item.quantity >= MAX_QUANTITY ? "disabled" : ""}>+</button>
+        </div>
+        <p class="cart-item-price">${Number.isFinite(item.unitPrice) ? `${item.unitPrice} €` : "—"}</p>
+        <p class="cart-item-total">${total !== null ? `${total} €` : "—"}</p>
+        <button type="button" class="cart-item-remove" data-action="remove" aria-label="Retirer cet article">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 7h16" />
+            <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+            <path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" />
+          </svg>
+        </button>
+      `;
+
+      row.querySelector('[data-action="decrease"]').addEventListener("click", () => {
+        Cart.setQuantity(index, Math.max(MIN_QUANTITY, item.quantity - 1));
+        render();
+      });
+      row.querySelector('[data-action="increase"]').addEventListener("click", () => {
+        Cart.setQuantity(index, Math.min(MAX_QUANTITY, item.quantity + 1));
+        render();
+      });
+      row.querySelector('[data-action="remove"]').addEventListener("click", () => {
+        Cart.remove(index);
+        render();
+      });
+
+      list.appendChild(row);
+    });
+
+    if (grandTotalEl) {
+      grandTotalEl.textContent = hasUnknownPrice ? `${grandTotal}+` : grandTotal;
+    }
+  }
+
+  render();
+
+  if (checkoutBtn) {
+    checkoutBtn.addEventListener("click", () => {
+      // [PLACEHOLDER] Pas de vraie transaction pour l'instant — à relier
+      // à Shopify plus tard.
+      console.log("Commande — panier :", Cart.read());
+      alert("Intégration Shopify à venir");
+    });
+  }
 })();

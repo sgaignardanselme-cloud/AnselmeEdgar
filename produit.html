@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <script>document.documentElement.classList.add('js');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>[Nom de la pièce] — [NOM DE LA MARQUE]</title>
+  <meta name="description" content="[PLACEHOLDER] Fiche produit — [Nom de la pièce]." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Merriweather:wght@700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <link rel="preload" as="style" href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Merriweather:wght@700&display=swap" rel="stylesheet" />
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap" rel="stylesheet" />
+  </noscript>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="scrollytelling static-shader-page">
+
+  <div id="shader-bg" class="site-shader-bg" data-shader-variant="static" aria-hidden="true"></div>
+
+  <div class="floating-nav">
+    <a href="index.html#accueil" class="floating-logo">[NOM MARQUE]</a>
+    <div class="nav-actions">
+      <a href="panier.html" class="cart-btn" data-cart-btn aria-label="Panier">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 8h12l-1 12H7L6 8Z" />
+          <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+        </svg>
+        <span class="cart-badge" data-cart-badge hidden>0</span>
+      </a>
+      <button class="hamburger-btn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="site-menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="site-menu" id="site-menu">
+    <nav class="site-menu-nav">
+      <ul>
+        <li><a href="index.html#accueil">Accueil</a></li>
+        <li><a href="index.html#univers">Univers</a></li>
+        <li><a href="index.html#drop" class="is-active">Drop</a></li>
+        <li><a href="archives.html">Archives</a></li>
+        <li><a href="index.html#contact">Contact</a></li>
+      </ul>
+      <div class="socials">
+        <a href="#" target="_blank" rel="noopener">Instagram</a>
+        <a href="#" target="_blank" rel="noopener">TikTok</a>
+      </div>
+    </nav>
+  </div>
+
+  <main>
+    <section class="reveal" style="padding-top:120px;">
+      <div class="container product-layout">
+        <div class="product-visual frame grain">
+          <div class="placeholder-visual">[PLACEHOLDER — PHOTO PRODUIT EN GRAND]</div>
+        </div>
+
+        <div class="product-info">
+          <p class="section-label">Drop en cours</p>
+          <h1 class="section-title">[Nom de la pièce]</h1>
+          <p class="product-price"><span data-unit-price="65">65 €</span> [PLACEHOLDER — prix à définir]</p>
+          <p class="section-text">
+            [PLACEHOLDER] Description courte de la pièce : matière, coupe,
+            détail qui la distingue.
+          </p>
+
+          <div class="selectors-row">
+            <div class="size-selector" role="group" aria-label="Choisir une taille" data-size-selector>
+              <button type="button" class="size-option" data-size="S">S</button>
+              <button type="button" class="size-option" data-size="M">M</button>
+              <button type="button" class="size-option" data-size="L">L</button>
+              <button type="button" class="size-option" data-size="XL">XL</button>
+            </div>
+
+            <div class="quantity-selector" role="group" aria-label="Choisir la quantité" data-quantity-selector>
+              <button type="button" class="quantity-btn" data-quantity-decrease aria-label="Diminuer la quantité">&minus;</button>
+              <span class="quantity-value" data-quantity-value aria-live="polite">1</span>
+              <button type="button" class="quantity-btn" data-quantity-increase aria-label="Augmenter la quantité">+</button>
+            </div>
+          </div>
+          <p class="form-note" data-size-note hidden>Sélectionne une taille avant de continuer.</p>
+
+          <p class="product-total" aria-live="polite">
+            Total (<span data-quantity-echo>1</span> pièce<span data-quantity-plural hidden>s</span>) :
+            <strong data-total-price>65</strong> €
+          </p>
+
+          <div class="product-actions">
+            <button type="button" class="btn" data-add-to-cart-btn>Ajouter au panier</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; 2026 [NOM DE LA MARQUE]. Tous droits réservés.</p>
+      <p>[PLACEHOLDER — statut juridique / mention légale à venir]</p>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+  <!-- Bundle React/Three.js buildé depuis src/shader-bg/ via `npm run build:shader`
+       (voir vite.config.js) — monte le fond animé dans #shader-bg. -->
+  <script defer src="js/shader-bg.bundle.js"></script>
+</body>
+</html>

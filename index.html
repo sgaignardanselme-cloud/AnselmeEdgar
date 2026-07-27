@@ -22,9 +22,18 @@
 
   <div class="floating-nav">
     <a href="#accueil" class="floating-logo">[NOM MARQUE]</a>
-    <button class="hamburger-btn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="site-menu">
-      <span></span><span></span><span></span>
-    </button>
+    <div class="nav-actions">
+      <a href="panier.html" class="cart-btn" data-cart-btn aria-label="Panier">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 8h12l-1 12H7L6 8Z" />
+          <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+        </svg>
+        <span class="cart-badge" data-cart-badge hidden>0</span>
+      </a>
+      <button class="hamburger-btn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="site-menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
   </div>
 
   <div class="site-menu" id="site-menu">
@@ -221,41 +230,41 @@
           <p class="section-label">Galerie</p>
           <h2 class="section-title">Les pièces</h2>
           <div class="gallery">
-            <figure class="gallery-item">
+            <a href="produit.html" class="gallery-item">
               <div class="gallery-item-visual curtain">
-                [Photo]
+                <div class="gallery-item-photo">[Photo]</div>
                 <span class="curtain-veil"></span>
               </div>
-              <figcaption class="gallery-item-label">[Nom de la pièce 1]</figcaption>
-            </figure>
-            <figure class="gallery-item">
+              <p class="gallery-item-label">[Nom de la pièce 1]</p>
+            </a>
+            <a href="produit.html" class="gallery-item">
               <div class="gallery-item-visual curtain">
-                [Photo]
+                <div class="gallery-item-photo">[Photo]</div>
                 <span class="curtain-veil"></span>
               </div>
-              <figcaption class="gallery-item-label">[Nom de la pièce 2]</figcaption>
-            </figure>
-            <figure class="gallery-item">
+              <p class="gallery-item-label">[Nom de la pièce 2]</p>
+            </a>
+            <a href="produit.html" class="gallery-item">
               <div class="gallery-item-visual curtain">
-                [Photo]
+                <div class="gallery-item-photo">[Photo]</div>
                 <span class="curtain-veil"></span>
               </div>
-              <figcaption class="gallery-item-label">[Nom de la pièce 3]</figcaption>
-            </figure>
-            <figure class="gallery-item">
+              <p class="gallery-item-label">[Nom de la pièce 3]</p>
+            </a>
+            <a href="produit.html" class="gallery-item">
               <div class="gallery-item-visual curtain">
-                [Photo]
+                <div class="gallery-item-photo">[Photo]</div>
                 <span class="curtain-veil"></span>
               </div>
-              <figcaption class="gallery-item-label">[Nom de la pièce 4]</figcaption>
-            </figure>
-            <figure class="gallery-item">
+              <p class="gallery-item-label">[Nom de la pièce 4]</p>
+            </a>
+            <a href="produit.html" class="gallery-item">
               <div class="gallery-item-visual curtain">
-                [Photo]
+                <div class="gallery-item-photo">[Photo]</div>
                 <span class="curtain-veil"></span>
               </div>
-              <figcaption class="gallery-item-label">[Nom de la pièce 5]</figcaption>
-            </figure>
+              <p class="gallery-item-label">[Nom de la pièce 5]</p>
+            </a>
           </div>
         </div>
       </section>

@@ -3,5 +3,6 @@ import ShaderBackground from './ShaderBackground.jsx';
 
 const mountPoint = document.getElementById('shader-bg');
 if (mountPoint) {
-  createRoot(mountPoint).render(<ShaderBackground />);
+  const variant = mountPoint.dataset.shaderVariant || 'animated';
+  createRoot(mountPoint).render(<ShaderBackground variant={variant} />);
 }
