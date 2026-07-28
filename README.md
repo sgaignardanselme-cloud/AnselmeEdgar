@@ -100,35 +100,38 @@ générateur de pages. Le mécanisme :
    réellement cochées pour ce produit dans le CMS, et la grille "Autres
    pièces du drop".
 
-### Configurer Netlify Identity + Git Gateway (à faire une seule fois)
+### Configurer l'authentification GitHub (à faire une seule fois)
 
-Ces étapes se font dans le tableau de bord Netlify, pas dans le code — à
-faire par vous, sur le site déjà déployé :
+Le backend est `github` en direct (`admin/config.yml`) — pas de Netlify
+Identity ni de Git Gateway. La connexion "Login with GitHub" repose sur une
+OAuth App GitHub, dont les identifiants (Client ID/Secret) sont enregistrés
+côté Netlify pour que Decap n'ait jamais à voir le secret. Procédure
+détaillée : voir la réponse donnée séparément ("créer une OAuth App sur
+GitHub"), résumée ici :
 
-1. Sur [app.netlify.com](https://app.netlify.com), ouvrez votre site →
-   **Site configuration → Identity → Enable Identity**.
-2. Toujours dans Identity → **Registration preferences** : passez sur
-   **"Invite only"** (recommandé — personne ne peut s'auto-inscrire).
-3. Toujours dans Identity → section **Services → Git Gateway → Enable Git
-   Gateway**. C'est ce qui permet à Decap CMS de committer dans le dépôt au
-   nom de l'utilisateur connecté, sans que vous ayez à créer de token GitHub
-   ni à donner accès au repo directement.
+1. Créer une OAuth App sur **github.com → Settings → Developer settings →
+   OAuth Apps → New OAuth App**, avec comme callback URL
+   `https://api.netlify.com/auth/done`.
+2. Enregistrer son Client ID + Client Secret dans le tableau de bord Netlify
+   du site : **Site configuration → Access control (ou "General") → OAuth →
+   Install provider → GitHub**.
 
-### Créer votre premier compte administrateur (vous et votre associé)
+### Donner accès au dépôt à votre associé
 
-1. Toujours dans l'onglet **Identity** du site sur Netlify → bouton
-   **"Invite users"**.
-2. Entrez votre email, puis celui de votre associé (un envoi par personne).
-3. Chacun reçoit un email d'invitation Netlify → cliquer sur le lien →
-   définir un mot de passe. Vous êtes automatiquement redirigé vers `/admin/`
-   une fois connecté (géré par le script Netlify Identity présent sur
-   `index.html`).
+Différence importante par rapport à Git Gateway : ici, Decap committe
+directement en tant que **l'utilisateur GitHub connecté** — chaque personne
+qui doit pouvoir publier a donc besoin d'un compte GitHub avec accès en
+écriture à ce dépôt (`sgaignardanselme-cloud/AnselmeEdgar`), pas juste d'une
+invitation Netlify. Sur github.com : **Settings du dépôt → Collaborators →
+Add people** → inviter le compte GitHub de votre associé (il devra accepter
+l'invitation reçue par email/notification GitHub).
 
 ### Accéder à l'interface d'administration
 
-- Une fois le compte créé : allez sur `https://votre-site.netlify.app/admin/`
-  (ou le lien direct reçu par email la première fois).
-- Connectez-vous avec l'email/mot de passe défini à l'invitation.
+- Allez sur `https://votre-site.netlify.app/admin/`.
+- Cliquez **"Login with GitHub"** → une fenêtre GitHub s'ouvre → autorisez
+  l'application (première fois seulement) → vous revenez sur `/admin`,
+  connecté.
 - Vous arrivez sur l'interface Decap CMS : "Réglages du site" (les textes de
   chaque section) et "Produits" (la collection des pièces du drop, avec
   boutons pour en ajouter/supprimer).
@@ -136,13 +139,14 @@ faire par vous, sur le site déjà déployé :
 ### Publier une modification — est-ce automatique ?
 
 **Oui, comme avec Git.** Cliquer sur "Publier" dans le CMS crée directement
-un commit sur la branche `main` du dépôt (via Git Gateway) — exactement comme
-si vous aviez fait `git push` vous-même. Netlify détecte ce nouveau commit et
-relance automatiquement `npm run build` (voir `netlify.toml`), qui recompile
-`data/settings.json`/`data/products.json` à partir de vos changements, puis
-republie le site. Il n'y a **aucune étape manuelle supplémentaire** — comptez
-en général 1 à 2 minutes entre le clic sur "Publier" et la mise en ligne
-effective (le temps que Netlify build + déploie).
+un commit sur la branche `main` du dépôt, authentifié comme votre compte
+GitHub — exactement comme si vous aviez fait `git push` vous-même. Netlify
+détecte ce nouveau commit et relance automatiquement `npm run build` (voir
+`netlify.toml`), qui recompile `data/settings.json`/`data/products.json` à
+partir de vos changements, puis republie le site. Il n'y a **aucune étape
+manuelle supplémentaire** — comptez en général 1 à 2 minutes entre le clic
+sur "Publier" et la mise en ligne effective (le temps que Netlify build +
+déploie).
 
 Le mode de publication est actuellement `simple` (publication directe, sans
 brouillon/validation) — avec deux personnes qui éditent, on peut passer à
@@ -151,10 +155,11 @@ relus avant publication ; demandez si ça vous intéresse.
 
 ### Tester en local (optionnel)
 
-Pour éditer depuis votre machine sans passer par Netlify Identity : lancez
-`npx decap-server` dans un terminal, votre serveur statique habituel dans un
-autre, puis ouvrez `/admin` — `local_backend: true` dans `config.yml` fait
-que Decap écrit alors directement dans vos fichiers locaux.
+Pour éditer depuis votre machine sans passer par l'authentification GitHub :
+lancez `npx decap-server` dans un terminal, votre serveur statique habituel
+dans un autre, puis ouvrez `/admin` — `local_backend: true` dans
+`config.yml` fait que Decap écrit alors directement dans vos fichiers
+locaux.
 
 ## Déploiement
 

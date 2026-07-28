@@ -1,18 +1,23 @@
 backend:
-  name: git-gateway
+  name: github
+  repo: sgaignardanselme-cloud/AnselmeEdgar
   branch: main
 
-# Netlify Identity + Git Gateway (configured in the Netlify dashboard, not
-# here — see README.md "Administration du contenu (CMS)") — every commit
-# Decap makes is authenticated as the logged-in Identity user and pushed
-# straight to `branch` above, exactly like a normal git push.
+# Direct GitHub OAuth (no Netlify Identity / Git Gateway involved at all).
+# Netlify still brokers the OAuth handshake itself (an "external OAuth
+# client" registered in the site's dashboard — see README.md
+# "Administration du contenu (CMS)"), but only to exchange the GitHub
+# login for a token; it never issues its own Identity accounts. Every
+# commit Decap makes is authenticated as whichever GitHub user logged in
+# and pushed straight to `branch` above — that GitHub user needs write
+# access to this repo (see README.md).
 publish_mode: simple
 
 # Only kicks in when the CMS is opened from localhost — lets you test
 # /admin locally (edits write straight to your local files) by running
 # `npx decap-server` in a second terminal alongside your usual dev
-# server, with no Netlify Identity login needed. Has no effect on the
-# deployed site, where git-gateway above is what's actually used.
+# server, with no GitHub login needed. Has no effect on the deployed
+# site, where the github backend above is what's actually used.
 local_backend: true
 
 media_folder: "images/uploads"

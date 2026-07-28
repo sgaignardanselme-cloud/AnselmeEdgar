@@ -357,44 +357,5 @@
        data/products.json (générés au build par scripts/build-content.js)
        et remplit les éléments [data-cms]/[data-cms-img]/[data-cms-list]. -->
   <script src="js/content.js"></script>
-  <!-- Netlify Identity : après avoir cliqué un lien d'invitation ou de
-       récupération de mot de passe, Netlify redirige ici avec un jeton
-       dans l'URL (#invite_token=... / #recovery_token=...) — mais ne
-       déclenche pas tout seul la fenêtre "définir un mot de passe" de
-       façon fiable. Ce script détecte ce jeton explicitement et ouvre le
-       widget sur le bon écran, puis redirige vers /admin/ une fois la
-       connexion effective. -->
-  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-  <script>
-    (function () {
-      if (!window.netlifyIdentity) return;
-
-      var hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-      var inviteToken = hashParams.get("invite_token");
-      var recoveryToken = hashParams.get("recovery_token");
-
-      // Whether login happened via one of the tokens below or as a normal
-      // returning-admin login, always send them into the CMS rather than
-      // leaving them stranded on the homepage.
-      netlifyIdentity.on("login", function () {
-        document.location.href = "/admin/";
-      });
-
-      netlifyIdentity.on("init", function () {
-        if (inviteToken) {
-          netlifyIdentity.open("signup");
-        } else if (recoveryToken) {
-          netlifyIdentity.open("login");
-        }
-      });
-
-      // Explicit init (rather than relying on the widget's own auto-init
-      // on script load) so this "init" listener is guaranteed to be
-      // attached before the event fires — with only the auto-init, the
-      // event can fire before this script has registered its listener,
-      // which is what was silently swallowing the invite/recovery token.
-      netlifyIdentity.init();
-    })();
-  </script>
 </body>
 </html>
