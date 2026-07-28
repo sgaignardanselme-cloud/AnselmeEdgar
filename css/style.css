@@ -1446,6 +1446,20 @@ section {
   width: 100%;
 }
 
+/* Below the 760px row layout, this card stacks the frame full-width at
+   a tall 3:4 ratio — on a phone that's easily 400px+ of pure image
+   height, way out of proportion with everything else already sized down
+   for mobile. Capping the width (same "constrain, don't change the
+   ratio/crop" approach used for the compact masterpiece frame further
+   down and the hero/drop visuals elsewhere) shrinks both dimensions
+   together and keeps it centred instead of stretched edge-to-edge. */
+@media (max-width: 759px) {
+  .gallery-piece .frame {
+    max-width: 240px;
+    margin: 0 auto;
+  }
+}
+
 .gallery-piece .frame .placeholder-visual {
   transition: transform 0.3s ease;
 }
@@ -1858,21 +1872,28 @@ section {
   }
 }
 
+/* Explicit column on mobile, not a wrapping row: .size-selector-group is
+   now two rows tall itself (size buttons + the "Guide des tailles" link
+   under them), so the old flex-wrap+align-items:center row let the
+   shorter .quantity-selector centre itself against that whole taller
+   block instead of lining up with the size buttons at its top — reading
+   as randomly dropped lower than expected. A plain top-to-bottom stack,
+   both left-aligned, puts the stepper directly under the size group with
+   no ambiguity. Reverts to the original side-by-side row once there's
+   reliably room for both at 480px+. */
 .selectors-row {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  /* Tighter by default: at phone widths the quantity stepper usually
-     wraps onto its own line below the size buttons (not enough room
-     side by side), and 32px reads as an oversized gap between just two
-     wrapped rows. Full 32px only once there's reliably room for both
-     side by side. */
+  flex-direction: column;
+  align-items: flex-start;
   gap: 20px;
   margin: 20px 0 8px;
 }
 
 @media (min-width: 480px) {
   .selectors-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
     gap: 32px;
     margin-top: 28px;
   }
@@ -1909,14 +1930,6 @@ section {
 
 .size-guide-link:hover {
   color: var(--text);
-}
-
-.static-shader-page .size-guide-link {
-  color: var(--ink-muted-strong);
-}
-
-.static-shader-page .size-guide-link:hover {
-  color: var(--ink);
 }
 
 /* Same glass tokens as .size-option/.btn again — the "-"/"+" stepper
@@ -2324,6 +2337,14 @@ section {
   color: var(--text-muted-strong);
 }
 
+/* Same label/value split as .product-total strong: the "N° de commande"
+   label stays muted, the number itself — the one thing on this page
+   someone might actually need to reference later — gets full-strength
+   white rather than inheriting the muted paragraph colour. */
+.order-number strong {
+  color: var(--text);
+}
+
 .order-list {
   display: flex;
   flex-direction: column;
@@ -2460,27 +2481,18 @@ section {
   background: rgba(27, 42, 74, 0.08);
 }
 
-.static-shader-page .floating-logo,
-.static-shader-page .cart-btn {
-  color: var(--ink);
-}
-
-/* While the menu is open, .floating-nav (z-index 250) still floats above
-   .site-menu's own dark overlay (z-index 220) — so the logo/cart icon
-   are now sitting on that dark panel, not the blue shader, and need to
-   go back to their normal light --text instead of the ink override
-   above. body.menu-open is toggled by script.js alongside .is-open. */
-.static-shader-page.menu-open .floating-logo,
-.static-shader-page.menu-open .cart-btn {
-  color: var(--text);
-}
-
-/* :not(.is-open) — once open, the bars morph into the close "X" sitting
-   over .site-menu's own dark overlay, not the shader background, and
-   need to stay white there (its existing default), not ink. */
-.static-shader-page .hamburger-btn:not(.is-open) span {
-  background: var(--ink);
-}
+/* .floating-logo/.cart-btn/.hamburger-btn sit directly on the raw
+   shader (.floating-nav has no fill behind them, unlike .btn/.size-option
+   above) — an earlier pass had them switch to --ink here on the same
+   "contrast fix" reasoning as the filled buttons, but --ink has no white
+   backing to read against here, just the bright "static" shader blue
+   itself, and measures under 3:1 contrast against it (fails WCAG AA,
+   found during the text-legibility pass across produit/panier/
+   confirmation). Removed — they now just keep their normal light
+   --text/#fff, same as index.html. That also retires the separate
+   .menu-open override that used to restore --text once the menu closed:
+   with no ink state left to restore from, it would've been a no-op
+   duplicate of the (now unconditional) default. */
 
 /* ---------- Archives page ---------- */
 
