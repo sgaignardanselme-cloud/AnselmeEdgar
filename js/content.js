@@ -132,6 +132,18 @@
       // already in the markup rather than blanking the section out.
       if (!list.length) return;
       grid.innerHTML = list.map(productCardHtml).join("");
+
+      // script.js's IntersectionObserver (see the "Scroll reveals" block)
+      // already ran and finished observing the *original* static cards
+      // by the time this fetch resolves — it has no idea these brand new
+      // .curtain elements exist, so without this they'd never get
+      // `.is-visible` and the opaque .curtain-veil (background: var(--ink),
+      // a dark navy blue) would stay covering the photo forever, reading
+      // as a plain dark blue card. Marking them revealed immediately
+      // sidesteps that rather than re-wiring a second observer for
+      // content that's already loaded, not something scrolling "into
+      // view" for the first time in the same sense.
+      grid.querySelectorAll(".curtain").forEach((el) => el.classList.add("is-visible"));
     });
   }
 
