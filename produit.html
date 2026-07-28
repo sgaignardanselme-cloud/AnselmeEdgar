@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <script>document.documentElement.classList.add('js');</script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>[Nom de la pièce] — [NOM DE LA MARQUE]</title>
   <meta name="description" content="[PLACEHOLDER] Fiche produit — [Nom de la pièce]." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -42,7 +42,11 @@
         <li><a href="index.html#accueil">Accueil</a></li>
         <li><a href="index.html#univers">Univers</a></li>
         <li><a href="index.html#drop" class="is-active">Drop</a></li>
+        <!-- Archives retiré du menu : pas encore de drop passé à archiver
+             (voir archives.html — code gardé intact). À réactiver une
+             fois un premier drop archivé :
         <li><a href="archives.html">Archives</a></li>
+        -->
         <li><a href="index.html#contact">Contact</a></li>
       </ul>
       <div class="socials">
@@ -55,8 +59,17 @@
   <main data-product-page>
     <section class="reveal" style="padding-top:120px;">
       <div class="container product-layout">
-        <div class="product-visual frame grain">
-          <div class="placeholder-visual">[PLACEHOLDER — PHOTO PRODUIT EN GRAND]</div>
+        <div class="product-visual">
+          <div class="garment-photo-stack frame grain">
+            <div class="garment-photo placeholder-visual is-active" data-view-photo="front">[PLACEHOLDER — VUE DEVANT]</div>
+            <div class="garment-photo placeholder-visual" data-view-photo="back">[PLACEHOLDER — VUE DOS]</div>
+            <div class="garment-photo placeholder-visual" data-view-photo="profile">[PLACEHOLDER — VUE PROFIL]</div>
+          </div>
+          <div class="view-selector" role="group" aria-label="Changer de vue" data-view-selector>
+            <button type="button" class="view-option is-selected" data-view="front" aria-pressed="true">Devant</button>
+            <button type="button" class="view-option" data-view="back" aria-pressed="false">Dos</button>
+            <button type="button" class="view-option" data-view="profile" aria-pressed="false">Profil</button>
+          </div>
         </div>
 
         <div class="product-info">

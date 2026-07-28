@@ -106,8 +106,12 @@
   }
 
   function productImageHtml(product) {
-    if (product.image) {
-      return `<div class="gallery-item-photo" style="background-image:url('${escapeHtml(product.image)}');background-size:cover;background-position:center;"></div>`;
+    // The gallery grids only ever show one thumbnail — the Devant view
+    // doubles as it when no dedicated "miniature" image is set, so
+    // editors don't have to upload the same front-facing shot twice.
+    const thumb = product.image || product.image_front;
+    if (thumb) {
+      return `<div class="gallery-item-photo" style="background-image:url('${escapeHtml(thumb)}');background-size:cover;background-position:center;"></div>`;
     }
     return `<div class="gallery-item-photo">[Photo]</div>`;
   }
@@ -147,6 +151,50 @@
     });
   }
 
+  // Devant/Dos/Profil switcher: each view is a .garment-photo stacked in
+  // the same box (see .garment-photo-stack in style.css); switching swaps
+  // which one carries .is-active/.is-leaving, and CSS transitions do the
+  // rotateY + blur "turn" — this just orchestrates the class changes and
+  // clears the outgoing view's classes once its own transition ends,
+  // rather than assuming a fixed duration.
+  function setupViewSwitcher(page) {
+    const photos = Array.from(page.querySelectorAll("[data-view-photo]"));
+    const buttons = Array.from(page.querySelectorAll("[data-view-selector] .view-option"));
+    if (!photos.length || !buttons.length) return;
+
+    let current = photos.find((p) => p.classList.contains("is-active"))?.dataset.viewPhoto || photos[0].dataset.viewPhoto;
+
+    function switchTo(view) {
+      if (view === current) return;
+      const nextPhoto = photos.find((p) => p.dataset.viewPhoto === view);
+      const currentPhoto = photos.find((p) => p.dataset.viewPhoto === current);
+      if (!nextPhoto || !currentPhoto) return;
+
+      currentPhoto.classList.remove("is-active");
+      currentPhoto.classList.add("is-leaving");
+      currentPhoto.addEventListener(
+        "transitionend",
+        () => currentPhoto.classList.remove("is-leaving"),
+        { once: true }
+      );
+
+      nextPhoto.classList.remove("is-leaving");
+      nextPhoto.classList.add("is-active");
+
+      buttons.forEach((btn) => {
+        const isSelected = btn.dataset.view === view;
+        btn.classList.toggle("is-selected", isSelected);
+        btn.setAttribute("aria-pressed", String(isSelected));
+      });
+
+      current = view;
+    }
+
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => switchTo(btn.dataset.view));
+    });
+  }
+
   // Everything below only runs on produit.html ([data-product-page] is
   // only present there) — size selection, the quantity stepper and
   // "Ajouter au panier" all need the CMS's per-product data (which sizes
@@ -175,13 +223,25 @@
     const materialsEl = page.querySelector("[data-product-description]");
     if (materialsEl && product.materials) materialsEl.textContent = product.materials;
 
-    const visualEl = page.querySelector(".product-visual .placeholder-visual");
-    if (visualEl && product.image) {
-      visualEl.style.backgroundImage = `url("${escapeHtml(product.image)}")`;
-      visualEl.style.backgroundSize = "cover";
-      visualEl.style.backgroundPosition = "center";
-      visualEl.textContent = "";
-    }
+    // Devant/Dos/Profil photos. "front" also falls back to the legacy
+    // single `image` field, so a product that only has that set (not yet
+    // re-photographed for the 3 views) still shows *something* instead
+    // of a bare placeholder.
+    const viewSources = {
+      front: product.image_front || product.image,
+      back: product.image_back,
+      profile: product.image_side,
+    };
+    page.querySelectorAll("[data-view-photo]").forEach((el) => {
+      const src = viewSources[el.dataset.viewPhoto];
+      if (!src) return;
+      el.style.backgroundImage = `url("${escapeHtml(src)}")`;
+      el.style.backgroundSize = "cover";
+      el.style.backgroundPosition = "center";
+      el.textContent = "";
+    });
+
+    setupViewSwitcher(page);
 
     document.title = document.title.replace("[Nom de la pièce]", product.name);
 

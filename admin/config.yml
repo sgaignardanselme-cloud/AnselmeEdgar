@@ -116,7 +116,14 @@ collections:
       - { label: "Prix (€)", name: "price", widget: "number", value_type: "float" }
       - { label: "Description courte", name: "short_description", widget: "text", hint: "Affichée sur la fiche produit, sous le prix." }
       - { label: "Matières / composition", name: "materials", widget: "text", hint: "Ex : 100% coton biologique, grammage 280g/m², confectionné en France." }
-      - { label: "Photo principale", name: "image", widget: "image" }
+      - { label: "Photo principale (miniature galerie)", name: "image", widget: "image", required: false, hint: "Utilisée sur les grilles produits (page d'accueil, \"Autres pièces du drop\"). Si vide, la vue Devant ci-dessous sert de miniature." }
+      - label: "Vues sur cintre (fiche produit)"
+        name: "image_front"
+        widget: "image"
+        required: false
+        hint: "Vue de face — affichée en premier sur la fiche produit."
+      - { label: "Vue de dos", name: "image_back", widget: "image", required: false }
+      - { label: "Vue de profil", name: "image_side", widget: "image", required: false }
       - label: "Photos additionnelles"
         name: "gallery"
         widget: "list"
