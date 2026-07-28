@@ -105,6 +105,30 @@
     }
   }
 
+  // Size guide table (produit.html): rows come straight from
+  // settings.size_guide.rows (see admin/config.yml) — no per-product
+  // logic, one shared table for the whole site for now. The modal's own
+  // open/close behaviour has no CMS data to wait on, so it lives in
+  // script.js instead (same split as everywhere else in this file).
+  function renderSizeGuide(settings) {
+    const body = document.querySelector("[data-size-guide-body]");
+    if (!body) return;
+    const rows = settings?.size_guide?.rows;
+    if (!Array.isArray(rows) || !rows.length) return;
+    body.innerHTML = rows
+      .map(
+        (row) => `
+          <tr>
+            <td>${escapeHtml(row.size || "—")}</td>
+            <td>${escapeHtml(row.chest || "—")}</td>
+            <td>${escapeHtml(row.length || "—")}</td>
+            <td>${escapeHtml(row.shoulders || "—")}</td>
+          </tr>
+        `
+      )
+      .join("");
+  }
+
   function productImageHtml(product) {
     // The gallery grids only ever show one thumbnail — the Devant view
     // doubles as it when no dedicated "miniature" image is set, so
@@ -326,6 +350,10 @@
           size: selectedSize,
           quantity,
           unitPrice: product.price,
+          // Same source as the product page's default "Devant" view (see
+          // viewSources above) — the cart line reuses it as a reminder
+          // thumbnail rather than re-fetching/duplicating anything.
+          image: product.image_front || product.image || "",
         });
 
         showToast("Ajouté au panier");
@@ -338,7 +366,10 @@
     fetchJson("data/products.json"),
   ]);
 
-  if (settings) applySettings(settings);
+  if (settings) {
+    applySettings(settings);
+    renderSizeGuide(settings);
+  }
 
   if (products) {
     const params = new URLSearchParams(window.location.search);
@@ -348,4 +379,10 @@
       renderProductGrids(products, params.get("p"));
     }
   }
+
+  // Real CMS copy (and, on index.html, the re-rendered "Les pièces" grid)
+  // can be taller or shorter than the placeholder content the progress
+  // rail's section ticks were positioned against on first paint — see
+  // the comment by window.refreshProgressRail in script.js.
+  if (window.refreshProgressRail) window.refreshProgressRail();
 })();

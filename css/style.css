@@ -67,11 +67,18 @@
 
 html {
   scroll-behavior: smooth;
+  /* Safety net, not a fix for any specific overflow found — nothing else
+     in the audit relies on horizontal scroll being possible, so there's
+     no reason a stray pixel from a future addition (parallax drift,
+     a wide table pasted into CMS text, etc.) should ever be able to
+     introduce one. */
+  overflow-x: hidden;
 }
 
 /* Default (any page without .scrollytelling, e.g. archives.html): the
    calm pearl background, static ink text — unaffected by scroll. */
 body {
+  overflow-x: hidden;
   background-color: var(--paper);
   background-image:
     radial-gradient(120% 90% at 14% -8%, rgba(255, 214, 224, 0.2) 0%, transparent 55%),
@@ -128,6 +135,22 @@ body.scrollytelling {
    button text unreadable against a background darker than what they're
    actually designed against. */
 body.scrollytelling.static-shader-page {
+  background: var(--shader-fallback-bg-bright);
+}
+
+/* Same two rules again, but on <html> (which carries these same classes
+   in the markup) rather than <body>. Normally the "canvas background" —
+   what paints behind everything, including the safe-area strips at the
+   very top/bottom of a notched phone — propagates from body up to html
+   automatically per spec, but that propagation is exactly the kind of
+   thing individual mobile browsers have historically been inconsistent
+   about; setting it explicitly on html too removes any doubt rather
+   than depending on that propagation happening correctly everywhere. */
+html.scrollytelling {
+  background: var(--shader-fallback-bg);
+}
+
+html.scrollytelling.static-shader-page {
   background: var(--shader-fallback-bg-bright);
 }
 
@@ -305,6 +328,11 @@ ul {
   padding-left: calc(20px + env(safe-area-inset-left));
   padding-right: calc(20px + env(safe-area-inset-right));
   pointer-events: none;
+  /* Explicit, not just "never set one": no bar behind the logo/hamburger
+     — the shader (or its flat fallback) shows straight through, so
+     there's no colour break at the very top of the screen, safe-area
+     strip included. */
+  background: transparent;
 }
 
 .floating-nav > * {
@@ -344,6 +372,34 @@ ul {
   border: none;
   color: var(--text);
   cursor: pointer;
+}
+
+/* A more noticeable confirmation than the toast alone on its own — see
+   Cart.add()'s bumpIcon() in script.js, which toggles this class
+   (removed and re-added on every add so repeated adds re-trigger it). */
+.cart-btn.is-bumped {
+  animation: cart-bump 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes cart-bump {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.35);
+  }
+  60% {
+    transform: scale(0.92);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-btn.is-bumped {
+    animation: none;
+  }
 }
 
 .cart-badge {
@@ -591,7 +647,25 @@ ul {
    gauge for how far through the page you are. Reuses --text-rgb (the
    same token driving body-copy colour) rather than its own colour logic
    — since it's also "sitting on" whatever part of the gradient is
-   currently on screen, the contrast math is identical. */
+   currently on screen, the contrast math is identical.
+   Also interactive (see script.js): the box itself is widened to a real
+   touch/drag target — the visible 1px thread stays exactly where it
+   always was, flush with the box's own left edge, via ::before below,
+   so only the *hit area* grows, nothing shifts visually.
+   touch-action:none is what stops the browser's own touch-scroll from
+   fighting our drag handling the instant a finger lands here — scoped to
+   this element alone, so scrolling anywhere else on the page is
+   completely untouched (native, no JS involved).
+   Width/left below 1140px (.container's max-width of 1100px + its 20px
+   side padding — the point below which .container has no real empty
+   margin and its content starts right at the viewport edge) is
+   deliberately narrow: a full 32px hit-box at left:24px used to overlap
+   ~20-36px into that content area, silently swallowing taps meant for
+   whatever sat flush-left there (nav logo aside, which wins on z-index,
+   but any left-aligned button/link further down the page). Audit found
+   this eating real clicks at exactly the 375-430px widths the rail is
+   most meant to work on. Widens back out once there's guaranteed empty
+   gutter to use instead. */
 .progress-rail {
   position: fixed;
   top: 0;
@@ -602,16 +676,35 @@ ul {
   height: 100vh;
   height: 100svh;
   height: 100dvh;
-  left: 24px;
-  width: 1px;
+  left: 8px;
+  width: 20px;
   z-index: 140;
+  background: transparent;
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+@media (min-width: 1140px) {
+  .progress-rail {
+    left: 24px;
+    width: 32px;
+  }
+}
+
+.progress-rail::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
   background: rgba(var(--text-rgb), 0.22);
   pointer-events: none;
 }
 
 .progress-rail-marker {
   position: absolute;
-  left: 50%;
+  left: 0;
   top: 0;
   width: 8px;
   height: 8px;
@@ -619,12 +712,41 @@ ul {
   background: rgb(var(--text-rgb));
   box-shadow: 0 0 8px rgba(var(--text-rgb), 0.5);
   transform: translate(-50%, -50%);
+  pointer-events: none;
 }
 
-@media (max-width: 640px) {
-  .progress-rail {
-    left: 12px;
-  }
+/* One per nav-worthy section (same 4 as .dot-nav — the opening "marque"
+   chapter has no nav entry anywhere else on the site either), injected
+   by script.js at each section's actual scroll position. Sized to the
+   same touch-friendly box as the rail itself; only the small inner dot
+   is visible. */
+.progress-rail-tick {
+  position: absolute;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.progress-rail-tick-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(var(--text-rgb), 0.5);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.progress-rail-tick:hover .progress-rail-tick-dot,
+.progress-rail-tick:focus-visible .progress-rail-tick-dot {
+  background: rgb(var(--text-rgb));
+  transform: scale(1.5);
 }
 
 /* ---------- Signature (opening chapter, before the hero) ---------- */
@@ -775,10 +897,14 @@ html.js .signature-reveal {
    text (mobile) or beside it (desktop), never behind or under it. */
 .hero-visual-frame {
   position: relative;
-  flex: 1 1 auto;
-  min-height: 240px;
-  /* 760px+ already zeroes this out (row layout, no stacked gap needed);
-     just tightening the mobile default here. */
+  /* Was flex:1 1 auto with only a 240px *floor* and no ceiling — in
+     .hero's column layout on mobile, that let it grow to fill whatever
+     vertical space .hero-text didn't need, which on a short phone
+     viewport meant most of the screen. flex:0 0 auto + a fixed
+     aspect-ratio gives it a predictable, capped size instead — proportion
+     driven by width, not "whatever's left over". */
+  flex: 0 0 auto;
+  aspect-ratio: 4 / 3;
   margin-bottom: 20px;
   overflow: hidden;
   border-radius: var(--radius-lg);
@@ -789,6 +915,7 @@ html.js .signature-reveal {
 @media (min-width: 760px) {
   .hero-visual-frame {
     flex: 1 1 55%;
+    aspect-ratio: auto;
     min-height: 420px;
     height: 64vh;
     max-height: 620px;
@@ -890,18 +1017,63 @@ html.js .signature-reveal {
   background: rgba(255, 255, 255, 0.14);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 8px 24px -12px rgba(7, 27, 51, 0.45);
+  /* Liquid-glass enhancement: an SVG filter (turbulence -> blur ->
+     displacement, defined once per page, see the <svg> right after <body>)
+     distorts the blurred backdrop instead of just blurring it flatly. This
+     is a second, later declaration of the same property on purpose: a
+     browser that can't parse an SVG-filter reference in backdrop-filter
+     treats the whole declaration as invalid and keeps the plain blur(10px)
+     above, so no @supports/JS feature-detection is needed for the
+     fallback. Starts on the cheaper "-light" filter (smaller
+     displacement/blur, mobile-safe); swapped for the full one at 640px+
+     below rather than left on everywhere, since the distortion is the
+     costliest part of this effect to render on weaker mobile GPUs. */
+  backdrop-filter: url(#btn-liquid-glass-light);
+  -webkit-backdrop-filter: url(#btn-liquid-glass-light);
+  /* Two inset shadows (light top edge, darker bottom edge) on top of the
+     existing drop shadow, for the sense of glass volume/thickness asked
+     for alongside the border. */
+  box-shadow:
+    0 8px 24px -12px rgba(7, 27, 51, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.45),
+    inset 0 -1px 2px rgba(7, 27, 51, 0.18);
   color: var(--text);
   transition: background 0.25s ease, border-color 0.25s ease, backdrop-filter 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 
-.btn:hover {
-  background: rgba(255, 255, 255, 0.22);
-  border-color: rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 10px 28px -12px rgba(7, 27, 51, 0.5);
-  transform: scale(1.03);
+/* Gated to real hover-capable pointers (mouse/trackpad): without this,
+   touch devices — iOS Safari especially — can leave a tapped button
+   visually "stuck" enlarged/brightened after release (hover firing on
+   touchdown, never clearing until something else is tapped), fighting
+   with the :active press feedback below rather than handing off to it
+   cleanly. Touch still gets full feedback, just through :active alone. */
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: url(#btn-liquid-glass-light);
+    -webkit-backdrop-filter: url(#btn-liquid-glass-light);
+    box-shadow:
+      0 10px 28px -12px rgba(7, 27, 51, 0.5),
+      inset 0 1px 1px rgba(255, 255, 255, 0.55),
+      inset 0 -1px 2px rgba(7, 27, 51, 0.2);
+    transform: scale(1.03);
+  }
+}
+
+/* Pressed state: fires on mouse click AND on touch tap alike (:active
+   isn't hover-only), so this doubles as the "pressed" feedback mobile
+   needs since it has no real :hover. Shadows flip inward (dark on top,
+   light on bottom) to read as pushed-in rather than raised. */
+.btn:active {
+  background: rgba(255, 255, 255, 0.26);
+  transform: scale(0.97);
+  box-shadow:
+    0 4px 14px -10px rgba(7, 27, 51, 0.5),
+    inset 0 1px 2px rgba(7, 27, 51, 0.28),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.3);
 }
 
 /* Secondary variant: same glass treatment, just a lighter fill/border
@@ -911,15 +1083,26 @@ html.js .signature-reveal {
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-.btn-outline:hover {
-  background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.35);
+@media (hover: hover) and (pointer: fine) {
+  .btn-outline:hover {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.35);
+  }
 }
 
 @media (min-width: 640px) {
   .btn {
     padding: 16px 28px;
     font-size: 0.85rem;
+    backdrop-filter: url(#btn-liquid-glass);
+    -webkit-backdrop-filter: url(#btn-liquid-glass);
+  }
+}
+
+@media (min-width: 640px) and (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    backdrop-filter: url(#btn-liquid-glass);
+    -webkit-backdrop-filter: url(#btn-liquid-glass);
   }
 }
 
@@ -965,6 +1148,129 @@ html.js .signature-reveal {
     transition: opacity 0.25s ease;
     transform: translate(-50%, 0);
   }
+}
+
+/* ---------- Size guide modal (produit.html) ---------- */
+/* Same "full-bleed fixed overlay" base as .site-menu, but centred on a
+   light --paper card instead of being the panel itself — a measurement
+   table reads far better on a solid light surface with dark ink text
+   than on the translucent glass/white-on-shader treatment the rest of
+   this page uses, the same reasoning as .cart-item's own light card. */
+.size-guide-modal {
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+  height: 100svh;
+  height: 100dvh;
+  z-index: 260;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  padding-top: calc(20px + env(safe-area-inset-top));
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+}
+
+.size-guide-modal[hidden] {
+  display: none;
+}
+
+.size-guide-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(7, 27, 51, 0.75);
+}
+
+.size-guide-panel {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  max-height: 100%;
+  overflow-y: auto;
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  box-shadow: 0 24px 60px -20px rgba(7, 27, 51, 0.5);
+}
+
+.size-guide-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.size-guide-title {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 1rem;
+  letter-spacing: 0.03em;
+}
+
+.size-guide-dismiss {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(27, 42, 74, 0.06);
+  border: none;
+  border-radius: 50%;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.size-guide-dismiss:hover {
+  background: rgba(27, 42, 74, 0.12);
+}
+
+/* Own scroll container for the table specifically — 4 columns of
+   measurements can outgrow a narrow phone screen even though the modal
+   card itself fits fine, so only the table scrolls horizontally rather
+   than the page. */
+.size-guide-table-wrap {
+  overflow-x: auto;
+}
+
+.size-guide-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.size-guide-table th,
+.size-guide-table td {
+  padding: 10px 12px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid rgba(27, 42, 74, 0.1);
+}
+
+.size-guide-table th {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+}
+
+.size-guide-note {
+  margin-top: 16px;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+}
+
+/* Locks background scroll while the modal is open — script.js toggles
+   this alongside [hidden] on the modal itself. */
+body.modal-open {
+  overflow: hidden;
 }
 
 /* ---------- Sections ---------- */
@@ -1031,6 +1337,27 @@ section {
 
 .section-text + .section-text {
   margin-top: -12px;
+}
+
+/* mentions-legales.html: long-form reading, so a narrower measure than
+   the rest of the site's wide sections — .legal-heading reuses
+   .section-title's family/weight at a smaller size for each block
+   ("Éditeur du site", "Hébergement"...) rather than a whole new
+   .section-title per block. */
+.legal-page {
+  max-width: 720px;
+}
+
+.legal-heading {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 1.1rem;
+  letter-spacing: 0.03em;
+  margin: 32px 0 10px;
+}
+
+.legal-page > .legal-heading:first-of-type {
+  margin-top: 24px;
 }
 
 /* A soft fade rather than a hard rule — separates sections without a
@@ -1240,7 +1567,11 @@ section {
 /* ---------- Drop section ---------- */
 
 .drop-hero-visual {
-  aspect-ratio: 3 / 4;
+  /* Was 3/4 (portrait — taller than wide) on mobile too, which on a
+     ~335px-wide container works out to ~450px tall: most of a phone
+     screen for one poster. 4/3 (landscape) cuts that roughly in half;
+     760px+ still switches to the wide 16/9 treatment. */
+  aspect-ratio: 4 / 3;
   width: 100%;
   border-radius: var(--radius-lg);
   margin-bottom: 20px;
@@ -1553,6 +1884,41 @@ section {
   gap: 12px;
 }
 
+.size-selector-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+/* Plain underlined text trigger (same weight as .cartel-link elsewhere),
+   not another glass button — it's a secondary action next to the real
+   size buttons, doesn't need their visual weight. */
+.size-guide-link {
+  background: none;
+  border: none;
+  padding: 6px 0;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  color: var(--text-muted-strong);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.size-guide-link:hover {
+  color: var(--text);
+}
+
+.static-shader-page .size-guide-link {
+  color: var(--ink-muted-strong);
+}
+
+.static-shader-page .size-guide-link:hover {
+  color: var(--ink);
+}
+
 /* Same glass tokens as .size-option/.btn again — the "-"/"+" stepper
    reads as one continuous outline control rather than two separate
    buttons either side of a number.
@@ -1751,16 +2117,43 @@ section {
    enough width for that, at 640px. */
 .cart-item {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 60px 1fr auto;
   grid-template-areas:
-    "info remove"
-    "qty qty"
-    "price total";
+    "photo info remove"
+    "photo qty qty"
+    "photo price total";
   gap: 10px 12px;
   padding: 16px;
   background: var(--surface);
   border: 1px solid rgba(27, 42, 74, 0.08);
   border-radius: var(--radius-md);
+}
+
+/* Thumbnail reminder of which piece this line is — same photo as the
+   product page's default "Devant" view (see content.js). Spans all three
+   mobile rows so it reads as sitting to the left of the whole line, not
+   just the name. Empty (no item.image) keeps this as a plain tinted box
+   instead of collapsing/disappearing, so the row grid stays aligned. */
+.cart-item-thumb {
+  grid-area: photo;
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  /* Same "no photo yet" treatment as .gallery-item-photo elsewhere on the
+     site (soft grey-blue gradient), rather than a flat tint — every
+     product currently has an empty image field in the CMS, so this is
+     what actually shows today, not just a rare fallback. Invisible once
+     a real <img> fills the box on top of it. */
+  background-color: var(--surface);
+  background-image: linear-gradient(160deg, var(--surface) 0%, #dfe3ec 100%);
+}
+
+.cart-item-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .cart-item-info {
@@ -1856,6 +2249,12 @@ section {
     padding: 20px;
   }
 
+  .cart-item-thumb {
+    width: 76px;
+    height: 76px;
+    flex: 0 0 auto;
+  }
+
   .cart-item-info {
     flex: 1 1 180px;
   }
@@ -1914,6 +2313,75 @@ section {
   }
 }
 
+/* ---------- Order confirmation (confirmation.html) ---------- */
+/* A read-only echo of .cart-item's visual language (same light --surface
+   card, same thumbnail treatment) but without any of the interactive
+   controls — nothing here can be edited, it's a receipt, so it gets its
+   own simpler flex row instead of reusing .cart-item's 5-area grid built
+   for the stepper/remove button it doesn't have. */
+.order-number {
+  margin: 12px 0 0;
+  color: var(--text-muted-strong);
+}
+
+.order-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.order-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid rgba(27, 42, 74, 0.08);
+  border-radius: var(--radius-md);
+}
+
+.order-item-thumb {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background-color: var(--surface);
+  background-image: linear-gradient(160deg, var(--surface) 0%, #dfe3ec 100%);
+}
+
+.order-item-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.order-item-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.order-item-name {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+
+.order-item-size {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
+
+.order-item-price {
+  flex: 0 0 auto;
+  font-size: 0.85rem;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
 /* ---------- Static shader page contrast fix (produit/panier) ---------- */
 /* produit.html and panier.html (body.static-shader-page) render the
    "static" ShaderGradient variant — a brighter, more uniform blue than
@@ -1931,14 +2399,38 @@ section {
   background: rgba(255, 255, 255, 0.92);
   border-color: rgba(255, 255, 255, 0.95);
   color: var(--ink);
-  box-shadow: 0 8px 24px -12px rgba(7, 27, 51, 0.35);
+  box-shadow:
+    0 8px 24px -12px rgba(7, 27, 51, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8),
+    inset 0 -1px 2px rgba(7, 27, 51, 0.08);
 }
 
-.static-shader-page .btn:hover,
 .static-shader-page .size-option:hover,
 .static-shader-page .view-option:hover {
   background: #fff;
   border-color: #fff;
+}
+
+/* Same hover-capable-only gate as .btn:hover above, for the same reason
+   (avoids a tap leaving this stuck bright on touch devices). */
+@media (hover: hover) and (pointer: fine) {
+  .static-shader-page .btn:hover {
+    background: #fff;
+    border-color: #fff;
+  }
+}
+
+/* Same tap/click "pressed" feedback as the translucent .btn above — this
+   fill is too opaque for the liquid-glass backdrop-filter to read visibly
+   (that's the point of this override, see the comment above), so volume
+   here comes from the inset shadows flipping inward instead. */
+.static-shader-page .btn:active {
+  background: #fff;
+  transform: scale(0.97);
+  box-shadow:
+    0 4px 14px -10px rgba(7, 27, 51, 0.4),
+    inset 0 1px 2px rgba(7, 27, 51, 0.15),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.6);
 }
 
 .static-shader-page .size-option.is-selected,
@@ -2114,6 +2606,8 @@ section {
   padding-bottom: calc(32px + env(safe-area-inset-bottom));
   color: var(--text-muted);
   font-size: 0.8rem;
+  /* Explicit, not just "never set one" — see .floating-nav's own note. */
+  background: transparent;
 }
 
 .site-footer .container {
@@ -2129,27 +2623,79 @@ section {
   }
 }
 
-/* ---------- Flip countdown (drop release date) ---------- */
-/* Each unit shows the current value; script.js flips it (a quick rotateX)
-   only on the tick where the number actually changes. */
-.flip-countdown {
+/* Links row (brand name + socials + Mentions légales) sits above the
+   plain copyright/legal text, separated by its own divider — still a
+   `.container` (same width/centering as the rest of the footer/page),
+   but needs its own selector here since `.site-footer .footer-links-row`
+   has to out-specificity `.site-footer .container` above to override its
+   flex-direction/gap rather than just adding to them. */
+.site-footer .footer-links-row {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(var(--text-rgb), 0.12);
+}
+
+@media (min-width: 640px) {
+  .site-footer .footer-links-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.footer-brand-name {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.footer-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px 20px;
+}
+
+.footer-nav a {
+  color: var(--text-muted-strong);
+  transition: color 0.2s ease;
+}
+
+.footer-nav a:hover {
+  color: var(--text);
+}
+
+/* ---------- Flip countdown (drop release date) ---------- */
+/* Each unit shows the current value; script.js flips it (a quick rotateX)
+   only on the tick where the number actually changes.
+   Forced to one thin row on mobile — nowrap, small cards/gap — rather
+   than left to flex-wrap onto two rows (4 units × card-plus-label-below
+   each is real height on a short phone viewport). Widths are small
+   enough now (4 × ~28px + 3 × 4px gap ≈ 124px) that this comfortably
+   fits even in the narrower half of .drop-infos's 2-column grid at
+   375px, so nowrap is safe rather than just hopeful. */
+.flip-countdown {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
 }
 
 .flip-unit {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 3px;
 }
 
 .flip-card {
   background: var(--ink);
   border-radius: var(--radius-sm);
-  padding: 8px 10px;
-  min-width: 44px;
+  padding: 4px 5px;
+  min-width: 28px;
   text-align: center;
   perspective: 300px;
   overflow: hidden;
@@ -2158,10 +2704,29 @@ section {
 .flip-value {
   display: inline-block;
   font-family: var(--font-display);
-  font-size: 1.25rem;
+  font-size: 0.85rem;
   line-height: 1;
   color: var(--paper);
   backface-visibility: hidden;
+}
+
+@media (min-width: 640px) {
+  .flip-countdown {
+    gap: 12px;
+  }
+
+  .flip-unit {
+    gap: 6px;
+  }
+
+  .flip-card {
+    padding: 8px 10px;
+    min-width: 44px;
+  }
+
+  .flip-value {
+    font-size: 1.25rem;
+  }
 }
 
 @media (min-width: 760px) {
@@ -2195,10 +2760,21 @@ html.js .flip-value.is-flipping {
 }
 
 .flip-label {
-  font-size: 0.65rem;
+  /* Small enough to fit "Jours"/"Heures" under a 28px-wide mobile card
+     without wrapping or overflowing it — still real, legible text
+     (8.8px), not clipped or replaced by single-letter abbreviations. */
+  font-size: 0.55rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.02em;
   color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .flip-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2216,7 +2792,9 @@ html.js .flip-value.is-flipping {
   }
 
   .btn:hover,
+  .btn:active,
   .btn-outline:hover,
+  .static-shader-page .btn:active,
   .drop-preview:hover,
   .gallery-piece:hover,
   .gallery-item:hover .gallery-item-photo,

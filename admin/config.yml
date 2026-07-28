@@ -101,6 +101,21 @@ collections:
           - { label: "Titre", name: "title", widget: "string" }
           - { label: "Message quand aucun drop archivé", name: "empty_message", widget: "text" }
 
+      - label: "Guide des tailles"
+        name: "size_guide"
+        file: "content/settings/size_guide.json"
+        fields:
+          - label: "Tableau des tailles"
+            name: "rows"
+            widget: "list"
+            hint: "Une ligne par taille — laissez une mesure vide si elle ne s'applique pas."
+            summary: "{{fields.size}}"
+            fields:
+              - { label: "Taille", name: "size", widget: "string" }
+              - { label: "Tour de poitrine (cm)", name: "chest", widget: "string", required: false }
+              - { label: "Longueur (cm)", name: "length", widget: "string", required: false }
+              - { label: "Épaules (cm)", name: "shoulders", widget: "string", required: false }
+
   - name: "products"
     label: "Produits (pièces du drop)"
     label_singular: "Produit"

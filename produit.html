@@ -1,11 +1,35 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="scrollytelling static-shader-page">
 <head>
   <meta charset="UTF-8" />
   <script>document.documentElement.classList.add('js');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <!-- Colours the mobile browser's own chrome to match the brighter
+       "static" shader this page uses — matches
+       --shader-fallback-bg-bright in css/style.css. -->
+  <meta name="theme-color" content="#2d6ce1" />
+  <!-- Placeholder favicon — see the same comment in index.html. -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='7' y='7' width='18' height='18' rx='4' fill='%232d6ce1' transform='rotate(45 16 16)'/%3E%3C/svg%3E" />
   <title>[Nom de la pièce] — [NOM DE LA MARQUE]</title>
   <meta name="description" content="[PLACEHOLDER] Fiche produit — [Nom de la pièce]." />
+  <!-- Open Graph / Twitter Card — voir la même note dans index.html.
+       Limite à connaître : produit.html est UN SEUL fichier partagé par
+       toutes les pièces (le vrai produit affiché dépend de ?p=<slug>,
+       résolu en JavaScript par js/content.js) — donc partager le lien
+       d'une pièce précise sur les réseaux affichera ce titre/visuel
+       générique, jamais le nom/la photo réelle de CETTE pièce (les
+       robots de partage ne lisent que le HTML statique, pas le
+       JavaScript). Pour un aperçu par produit, il faudrait une page HTML
+       statique par pièce — hors périmètre ici. -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="[Nom de la pièce] — [NOM DE LA MARQUE]" />
+  <meta property="og:description" content="[PLACEHOLDER] Fiche produit — [Nom de la pièce]." />
+  <meta property="og:image" content="[À REMPLACER — URL absolue d'un visuel produit]" />
+  <meta property="og:url" content="[À REMPLACER — URL du site]/produit.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="[Nom de la pièce] — [NOM DE LA MARQUE]" />
+  <meta name="twitter:description" content="[PLACEHOLDER] Fiche produit — [Nom de la pièce]." />
+  <meta name="twitter:image" content="[À REMPLACER — URL absolue d'un visuel produit]" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Merriweather:wght@700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
@@ -17,6 +41,25 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body class="scrollytelling static-shader-page">
+
+  <!-- Liquid-glass SVG filter for the .btn backdrop-filter effect — see
+       the same block in index.html for the full explanation. -->
+  <svg width="0" height="0" style="position:absolute;overflow:hidden;" aria-hidden="true" focusable="false">
+    <defs>
+      <filter id="btn-liquid-glass-light" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.024" numOctaves="2" seed="7" result="noise" />
+        <feGaussianBlur in="noise" stdDeviation="2" result="softNoise" />
+        <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="8" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+        <feGaussianBlur in="displaced" stdDeviation="3" />
+      </filter>
+      <filter id="btn-liquid-glass" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.024" numOctaves="2" seed="7" result="noise" />
+        <feGaussianBlur in="noise" stdDeviation="3" result="softNoise" />
+        <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="20" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+        <feGaussianBlur in="displaced" stdDeviation="4" />
+      </filter>
+    </defs>
+  </svg>
 
   <div id="shader-bg" class="site-shader-bg" data-shader-variant="static" aria-hidden="true"></div>
 
@@ -56,6 +99,34 @@
     </nav>
   </div>
 
+  <!-- Guide des tailles : ouvert depuis le bouton à côté du sélecteur de
+       taille (voir plus bas) — voir js/script.js pour l'ouverture/
+       fermeture et js/content.js pour le remplissage du tableau depuis
+       le CMS (Réglages du site → Guide des tailles). -->
+  <div class="size-guide-modal" data-size-guide-modal hidden>
+    <div class="size-guide-backdrop" data-size-guide-close></div>
+    <div class="size-guide-panel" role="dialog" aria-modal="true" aria-labelledby="size-guide-title">
+      <div class="size-guide-header">
+        <h2 id="size-guide-title" class="size-guide-title">Guide des tailles</h2>
+        <button type="button" class="size-guide-dismiss" data-size-guide-close aria-label="Fermer">&times;</button>
+      </div>
+      <div class="size-guide-table-wrap">
+        <table class="size-guide-table">
+          <thead>
+            <tr>
+              <th>Taille</th>
+              <th>Tour de poitrine</th>
+              <th>Longueur</th>
+              <th>Épaules</th>
+            </tr>
+          </thead>
+          <tbody data-size-guide-body></tbody>
+        </table>
+      </div>
+      <p class="size-guide-note">[PLACEHOLDER] Mesures données à titre indicatif, en centimètres.</p>
+    </div>
+  </div>
+
   <main data-product-page>
     <section class="reveal" style="padding-top:120px;">
       <div class="container product-layout">
@@ -82,11 +153,14 @@
           </p>
 
           <div class="selectors-row">
-            <div class="size-selector" role="group" aria-label="Choisir une taille" data-size-selector>
-              <button type="button" class="size-option" data-size="S">S</button>
-              <button type="button" class="size-option" data-size="M">M</button>
-              <button type="button" class="size-option" data-size="L">L</button>
-              <button type="button" class="size-option" data-size="XL">XL</button>
+            <div class="size-selector-group">
+              <div class="size-selector" role="group" aria-label="Choisir une taille" data-size-selector>
+                <button type="button" class="size-option" data-size="S">S</button>
+                <button type="button" class="size-option" data-size="M">M</button>
+                <button type="button" class="size-option" data-size="L">L</button>
+                <button type="button" class="size-option" data-size="XL">XL</button>
+              </div>
+              <button type="button" class="size-guide-link" data-size-guide-open>Guide des tailles</button>
             </div>
 
             <div class="quantity-selector" role="group" aria-label="Choisir la quantité" data-quantity-selector>
@@ -160,8 +234,16 @@
   </main>
 
   <footer class="site-footer">
+    <div class="container footer-links-row">
+      <p class="footer-brand-name" data-cms="general.brand_name">[NOM DE LA MARQUE]</p>
+      <nav class="footer-nav" aria-label="Réseaux sociaux et informations">
+        <a href="#" target="_blank" rel="noopener" data-cms-href="general.instagram_url">Instagram</a>
+        <a href="#" target="_blank" rel="noopener" data-cms-href="general.tiktok_url">TikTok</a>
+        <a href="mentions-legales.html">Mentions légales</a>
+      </nav>
+    </div>
     <div class="container">
-      <p>&copy; 2026 <span data-cms="general.brand_name">[NOM DE LA MARQUE]</span>. Tous droits réservés.</p>
+      <p>&copy; <span data-current-year>2026</span> <span data-cms="general.brand_name">[NOM DE LA MARQUE]</span>. Tous droits réservés.</p>
       <p data-cms="general.footer_legal">[PLACEHOLDER — statut juridique / mention légale à venir]</p>
     </div>
   </footer>

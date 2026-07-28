@@ -10,19 +10,21 @@
   <meta name="theme-color" content="#2d6ce1" />
   <!-- Placeholder favicon — see the same comment in index.html. -->
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='7' y='7' width='18' height='18' rx='4' fill='%232d6ce1' transform='rotate(45 16 16)'/%3E%3C/svg%3E" />
-  <title>Panier — [NOM DE LA MARQUE]</title>
-  <meta name="description" content="[PLACEHOLDER] Le panier — articles ajoutés, quantités et total." />
+  <title>Commande confirmée — [NOM DE LA MARQUE]</title>
+  <meta name="description" content="Confirmation de commande." />
   <!-- Open Graph / Twitter Card — voir la même note dans index.html. Pas
-       d'image : le contenu du panier est propre à chaque visiteur
-       (stocké dans son navigateur), il n'y a pas de visuel générique
-       pertinent à montrer ici. -->
+       d'image, même raisonnement que panier.html : le contenu de cette
+       page est propre à chaque commande, pas de visuel générique
+       pertinent. Cette page n'a de toute façon pas vocation à être
+       partagée. -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Panier — [NOM DE LA MARQUE]" />
-  <meta property="og:description" content="[PLACEHOLDER] Le panier — articles ajoutés, quantités et total." />
-  <meta property="og:url" content="[À REMPLACER — URL du site]/panier.html" />
+  <meta property="og:title" content="Commande confirmée — [NOM DE LA MARQUE]" />
+  <meta property="og:description" content="Confirmation de commande." />
+  <meta property="og:url" content="[À REMPLACER — URL du site]/confirmation.html" />
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Panier — [NOM DE LA MARQUE]" />
-  <meta name="twitter:description" content="[PLACEHOLDER] Le panier — articles ajoutés, quantités et total." />
+  <meta name="twitter:title" content="Commande confirmée — [NOM DE LA MARQUE]" />
+  <meta name="twitter:description" content="Confirmation de commande." />
+  <meta name="robots" content="noindex" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Merriweather:wght@700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
@@ -94,21 +96,40 @@
 
   <main>
     <section class="reveal" style="padding-top:120px;">
-      <div class="container">
-        <p class="section-label">Panier</p>
-        <h1 class="section-title">Ton panier</h1>
-
-        <div class="cart-empty" data-cart-empty hidden>
-          <p>Ton panier est vide.</p>
-          <a href="index.html#drop" class="btn">Découvrir le drop</a>
+      <div class="container" style="max-width:640px;">
+        <!-- Shown when confirmation.html is opened without having just
+             gone through panier.html's checkout — direct nav, a refresh
+             after the tab's sessionStorage handoff is gone, etc. (see
+             js/script.js). -->
+        <div class="order-empty" data-order-empty hidden>
+          <p class="section-label">Commande</p>
+          <h1 class="section-title">Aucune commande récente</h1>
+          <p class="section-text">
+            On ne trouve pas de commande à te montrer ici — si tu viens
+            de passer commande, réessaie depuis ton panier.
+          </p>
+          <div class="btn-row" style="margin-top:24px;">
+            <a href="index.html#accueil" class="btn">Retour à l'accueil</a>
+          </div>
         </div>
 
-        <div data-cart-content>
-          <div class="cart-list" data-cart-list></div>
+        <div data-order-content hidden>
+          <p class="section-label">Commande confirmée</p>
+          <h1 class="section-title">Merci pour ta commande !</h1>
+          <p class="section-text">
+            On prépare déjà ta pièce — un email de confirmation suivra
+            [PLACEHOLDER — une fois l'envoi automatique branché].
+          </p>
+          <p class="order-number">
+            N° de commande : <strong data-order-number>—</strong>
+          </p>
 
-          <div class="cart-summary">
-            <p class="cart-grand-total">Total : <strong data-cart-grand-total>0</strong> €</p>
-            <button type="button" class="btn" data-cart-checkout-btn>Payer</button>
+          <div class="order-list" data-order-summary></div>
+
+          <p class="cart-grand-total">Total : <strong data-order-total>0</strong> €</p>
+
+          <div class="btn-row" style="margin-top:24px;">
+            <a href="index.html#accueil" class="btn">Retour à l'accueil</a>
           </div>
         </div>
       </div>

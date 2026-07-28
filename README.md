@@ -13,6 +13,12 @@ dans un navigateur suffit en local ; pour le déploiement voir plus bas.
   dans le menu/la navigation à points, on le traverse juste au début du scroll.
 - `archives.html` — page séparée (structure prête, vide en V1), non intégrée au
   défilement puisqu'elle n'a pas encore de contenu réel.
+- `confirmation.html` — affichée après le clic sur "Payer" (panier.html) : récapitulatif
+  de la commande, numéro généré côté client, panier vidé à ce moment-là. Les données
+  viennent d'un `sessionStorage` posé juste avant la redirection (voir js/script.js) —
+  ouvrir cette page directement, sans passer par le panier, affiche son état vide.
+- `mentions-legales.html` — texte statique, pas géré par le CMS (voir la liste
+  "À remplacer avant mise en ligne" plus bas).
 
 ## Navigation à une page
 
@@ -58,6 +64,18 @@ listés ici pour mémoire (cf. brief section 6) :
       l'`action` du `<form>` dans la section `#contact` (reste manuel — c'est une clé
       technique, pas du contenu éditorial)
 - [ ] Mention légale — CMS : Réglages du site → Général → *Mention légale (footer)*
+- [ ] Mesures du guide des tailles — CMS : Réglages du site → Guide des tailles
+      (tour de poitrine / longueur / épaules par taille, tous vides pour l'instant)
+- [ ] Page `mentions-legales.html` : texte statique, pas géré par le CMS (comme le
+      formulaire de contact) — à réécrire une fois le statut juridique de la marque
+      créé (forme juridique, adresse, SIREN/SIRET, responsable de publication...)
+- [ ] Favicon — mark géométrique temporaire (même `<link rel="icon">` inline sur
+      toutes les pages) ; à remplacer une fois un vrai logo/objet symbole choisi
+- [ ] Balises Open Graph / Twitter Card (`og:url`, `twitter:image`, `og:image`...) — dans le
+      `<head>` de chaque page en HTML statique, **pas** géré par le CMS : les robots de
+      partage (Instagram, TikTok, WhatsApp...) ne chargent pas le JavaScript de la page,
+      donc ces balises doivent rester du texte en dur. Cherchez `[À REMPLACER` dans les
+      fichiers `.html` — il faut l'URL réelle du site une fois déployé.
 
 ## Images
 

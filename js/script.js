@@ -89,19 +89,21 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// Global cart: sessionStorage-backed (not a plain in-memory variable),
-// since the site is multi-page — a variable would reset on every
-// navigation between index.html/produit.html/archives.html, defeating
-// "accessible from any page". sessionStorage still needs no backend and
-// clears itself once the tab closes. Declared at the top level (not
-// inside an IIFE) so both the header badge below and produit.html's
-// "Ajouter au panier" handler further down the file can call it.
+// Global cart: localStorage-backed (not a plain in-memory variable, and
+// not sessionStorage) — the site is multi-page, so a variable would
+// reset on every navigation between index.html/produit.html/archives.html,
+// defeating "accessible from any page"; localStorage additionally
+// survives closing the tab or an accidental reload, which sessionStorage
+// wouldn't (it's cleared the moment the tab closes). Still needs no
+// backend. Declared at the top level (not inside an IIFE) so both the
+// header badge below and produit.html's "Ajouter au panier" handler
+// further down the file can call it.
 const Cart = (() => {
   const STORAGE_KEY = "cart";
 
   function read() {
     try {
-      const parsed = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
       return Array.isArray(parsed) ? parsed : [];
     } catch (error) {
       return [];
@@ -114,23 +116,43 @@ const Cart = (() => {
   // applies, it just won't survive a navigation.
   function persist(items) {
     try {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     } catch (error) {
       // Ignored — see comment above.
     }
     renderBadge();
   }
 
+  // A brief, more noticeable confirmation than the toast alone — the
+  // cart icon itself bounces. Only on an actual add (not remove/quantity
+  // changes elsewhere, which also go through persist() above), so it's
+  // called explicitly here rather than folded into persist()/renderBadge().
+  function bumpIcon() {
+    const btn = document.querySelector("[data-cart-btn]");
+    if (!btn) return;
+    btn.classList.remove("is-bumped");
+    void btn.offsetWidth; // restart the animation on repeated adds
+    btn.classList.add("is-bumped");
+  }
+
   function add(item) {
     const items = read();
     items.push(item);
     persist(items);
+    bumpIcon();
   }
 
   function remove(index) {
     const items = read();
     items.splice(index, 1);
     persist(items);
+  }
+
+  // Empties the cart outright — used once an order is actually placed
+  // (see the checkout handler below), since those items aren't "in the
+  // cart" any more once they're on a confirmed order.
+  function clear() {
+    persist([]);
   }
 
   // No "total" field is kept in storage — every reader recomputes
@@ -155,10 +177,16 @@ const Cart = (() => {
     badge.hidden = total === 0;
   }
 
-  return { read, add, remove, setQuantity, count, renderBadge };
+  return { read, add, remove, setQuantity, clear, count, renderBadge };
 })();
 
 Cart.renderBadge();
+
+// Footer copyright year: computed, not hardcoded, so it doesn't need a
+// manual edit every January 1st.
+document.querySelectorAll("[data-current-year]").forEach((el) => {
+  el.textContent = new Date().getFullYear();
+});
 
 // Toast: a small, self-dismissing notification (e.g. "Ajouté au
 // panier"), built and appended on demand rather than living in every
@@ -427,35 +455,141 @@ function showToast(message) {
   sections.forEach((section) => observer.observe(section));
 })();
 
-// Progress rail: slides the marker down the fixed vertical line in step
-// with how far through the document the user has scrolled (0% at the
-// very top, 100% at the very bottom). Not gated behind
+// Progress rail: the marker still just tracks scroll position on a plain
+// scroll (0% at the top, 100% at the bottom, not gated behind
 // prefers-reduced-motion — like the adaptive text colour, this tracks
-// scroll position directly rather than playing an independent animation.
+// scroll position directly rather than playing an independent
+// animation) — but the rail is now interactive on top of that:
+//   - one .progress-rail-tick button per nav-worthy section (same 4 as
+//     .dot-nav), injected here since each one's position depends on that
+//     section's real, laid-out scroll offset — click/tap smooth-scrolls
+//     straight to it.
+//   - press-dragging anywhere on the rail (mouse or touch — Pointer
+//     Events cover both with one implementation) scrubs the scroll
+//     position live, proportional to where the pointer is on the rail.
+//     The marker is moved directly from the pointer position during the
+//     drag (not derived back from scrollY afterwards), so it never lags
+//     a frame behind the finger/cursor.
 (() => {
+  const rail = document.querySelector("[data-progress-rail]");
   const marker = document.querySelector(".progress-rail-marker");
-  if (!marker) return;
+  if (!rail || !marker) return;
 
-  let ticking = false;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  function update() {
-    const doc = document.documentElement;
-    const maxScroll = doc.scrollHeight - window.innerHeight;
-    const progress = maxScroll > 0 ? Math.min(1, Math.max(0, window.scrollY / maxScroll)) : 0;
-    marker.style.top = `${progress * 100}%`;
-    ticking = false;
+  function maxScroll() {
+    return Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
   }
 
+  function scrollProgress() {
+    const max = maxScroll();
+    return max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+  }
+
+  function setMarker(progress) {
+    marker.style.top = `${progress * 100}%`;
+  }
+
+  // ---- Passive tracking: marker follows normal scroll, as before —
+  // paused while actively dragging, since the drag handler below is
+  // already driving the marker (and the scroll position) directly. ----
+  let ticking = false;
+  let dragging = false;
+
   function onScroll() {
-    if (!ticking) {
-      window.requestAnimationFrame(update);
-      ticking = true;
+    if (dragging || ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(() => {
+      setMarker(scrollProgress());
+      ticking = false;
+    });
+  }
+
+  setMarker(scrollProgress());
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
+
+  // ---- Section ticks ----
+  const sections = Array.from(document.querySelectorAll(".scroll-section[id]")).filter(
+    // The opening "marque" chapter has no nav entry anywhere else on the
+    // site either (see .dot-nav) — same convention here.
+    (section) => section.id !== "marque"
+  );
+
+  function capitalize(id) {
+    return id.charAt(0).toUpperCase() + id.slice(1);
+  }
+
+  const ticks = sections.map((section) => {
+    const tick = document.createElement("button");
+    tick.type = "button";
+    tick.className = "progress-rail-tick";
+    tick.setAttribute("aria-label", `Aller à la section ${capitalize(section.id)}`);
+    tick.innerHTML = '<span class="progress-rail-tick-dot"></span>';
+    tick.addEventListener("click", () => {
+      section.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    });
+    rail.appendChild(tick);
+    return { section, el: tick };
+  });
+
+  function layoutTicks() {
+    const max = maxScroll();
+    ticks.forEach(({ section, el }) => {
+      const progress = max > 0 ? Math.min(1, Math.max(0, section.offsetTop / max)) : 0;
+      el.style.top = `${progress * 100}%`;
+    });
+  }
+
+  layoutTicks();
+  window.addEventListener("resize", layoutTicks);
+
+  // js/content.js fills in CMS text (and rebuilds the "Les pièces" grid)
+  // asynchronously, well after this runs — real copy can be longer or
+  // shorter than the placeholder text, which shifts every section below
+  // it. Exposed so content.js can ask for a recompute once it's actually
+  // done, rather than these ticks staying pinned to stale positions.
+  window.refreshProgressRail = layoutTicks;
+
+  // ---- Drag-to-scrub. Scoped entirely to `rail` — touch-action:none in
+  // CSS is what stops the browser's own touch-scroll gesture from
+  // starting the instant a finger lands here, so this never fights with
+  // (or leaks into) normal scrolling anywhere else on the page. ----
+  function progressFromPointer(event) {
+    const rect = rail.getBoundingClientRect();
+    const relY = (event.clientY - rect.top) / rect.height;
+    return Math.min(1, Math.max(0, relY));
+  }
+
+  function applyProgress(progress) {
+    setMarker(progress);
+    window.scrollTo({ top: progress * maxScroll(), behavior: "auto" });
+  }
+
+  rail.addEventListener("pointerdown", (event) => {
+    // Let a tick's own click handler manage this one instead — dragging
+    // shouldn't hijack a direct tap/click on a section marker.
+    if (event.target.closest(".progress-rail-tick")) return;
+    dragging = true;
+    rail.setPointerCapture(event.pointerId);
+    applyProgress(progressFromPointer(event));
+  });
+
+  rail.addEventListener("pointermove", (event) => {
+    if (!dragging) return;
+    applyProgress(progressFromPointer(event));
+  });
+
+  function endDrag(event) {
+    if (!dragging) return;
+    dragging = false;
+    if (rail.hasPointerCapture(event.pointerId)) {
+      rail.releasePointerCapture(event.pointerId);
     }
   }
 
-  update();
-  window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("resize", onScroll);
+  rail.addEventListener("pointerup", endDrag);
+  rail.addEventListener("pointercancel", endDrag);
 })();
 
 // Product page (size selector, quantity stepper, "Ajouter au panier") has
@@ -513,7 +647,15 @@ function showToast(message) {
 
       const row = document.createElement("div");
       row.className = "cart-item";
+      // item.image is only set on items added after this thumbnail was
+      // introduced — older carts already sitting in localStorage won't
+      // have it, so fall back to an empty tinted box rather than a broken
+      // image icon.
+      const thumb = item.image
+        ? `<img src="${escapeHtml(item.image)}" alt="" loading="lazy" />`
+        : "";
       row.innerHTML = `
+        <div class="cart-item-thumb">${thumb}</div>
         <div class="cart-item-info">
           <p class="cart-item-name">${escapeHtml(item.name)}</p>
           <p class="cart-item-size">Taille ${escapeHtml(item.size)}</p>
@@ -560,9 +702,120 @@ function showToast(message) {
   if (checkoutBtn) {
     checkoutBtn.addEventListener("click", () => {
       // [PLACEHOLDER] Pas de vraie transaction pour l'instant — à relier
-      // à Shopify plus tard.
-      console.log("Commande — panier :", Cart.read());
-      alert("Intégration Shopify à venir");
+      // à Shopify plus tard. In the meantime this still behaves like a
+      // real checkout from the user's point of view: an order number is
+      // generated, the cart is emptied, and confirmation.html shows a
+      // proper summary instead of a bare alert().
+      const items = Cart.read();
+      if (!items.length) return;
+
+      const orderNumber = `CMD-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+      const total = items.reduce(
+        (sum, item) => (Number.isFinite(item.unitPrice) ? sum + item.unitPrice * item.quantity : sum),
+        0
+      );
+      const hasUnknownPrice = items.some((item) => !Number.isFinite(item.unitPrice));
+
+      // sessionStorage, not localStorage: this is a one-time handoff to
+      // the very next page load, not something that should persist
+      // across visits the way the cart itself needs to (see Cart above).
+      try {
+        sessionStorage.setItem(
+          "lastOrder",
+          JSON.stringify({ orderNumber, items, total, hasUnknownPrice })
+        );
+      } catch (error) {
+        // Ignored — confirmation.html falls back to its empty state.
+      }
+
+      Cart.clear();
+      window.location.href = "confirmation.html";
     });
   }
 })();
+
+// Order confirmation page (confirmation.html only — [data-order-summary]
+// is only present there): reads the handoff sessionStorage.setItem
+// above wrote, renders the summary, and falls back to an empty state if
+// opened without it (direct nav, refresh after the tab's session data is
+// gone, etc.) rather than showing a broken/blank page.
+(() => {
+  const summaryEl = document.querySelector("[data-order-summary]");
+  if (!summaryEl) return;
+
+  const numberEl = document.querySelector("[data-order-number]");
+  const totalEl = document.querySelector("[data-order-total]");
+  const emptyEl = document.querySelector("[data-order-empty]");
+  const contentEl = document.querySelector("[data-order-content]");
+
+  function escapeHtml(value) {
+    const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+    return String(value).replace(/[&<>"']/g, (ch) => map[ch]);
+  }
+
+  let order = null;
+  try {
+    order = JSON.parse(sessionStorage.getItem("lastOrder"));
+  } catch (error) {
+    order = null;
+  }
+
+  if (!order || !Array.isArray(order.items) || !order.items.length) {
+    if (emptyEl) emptyEl.hidden = false;
+    if (contentEl) contentEl.hidden = true;
+    return;
+  }
+
+  if (contentEl) contentEl.hidden = false;
+  if (emptyEl) emptyEl.hidden = true;
+  if (numberEl) numberEl.textContent = order.orderNumber;
+  if (totalEl) totalEl.textContent = order.hasUnknownPrice ? `${order.total}+` : order.total;
+
+  summaryEl.innerHTML = order.items
+    .map((item) => {
+      const thumb = item.image ? `<img src="${escapeHtml(item.image)}" alt="" loading="lazy" />` : "";
+      const lineTotal = Number.isFinite(item.unitPrice) ? `${item.unitPrice * item.quantity} €` : "—";
+      return `
+        <div class="order-item">
+          <div class="order-item-thumb">${thumb}</div>
+          <div class="order-item-info">
+            <p class="order-item-name">${escapeHtml(item.name)}</p>
+            <p class="order-item-size">Taille ${escapeHtml(item.size)} · Qté ${item.quantity}</p>
+          </div>
+          <p class="order-item-price">${lineTotal}</p>
+        </div>
+      `;
+    })
+    .join("");
+})();
+
+// Size guide modal (produit.html only — [data-size-guide-modal] is only
+// present there). Same open/close/backdrop/Escape pattern as the
+// hamburger .site-menu above; the table's own content is filled in by
+// content.js once the CMS data (settings.size_guide.rows) has loaded —
+// this only owns showing/hiding the panel.
+document.addEventListener("DOMContentLoaded", () => {
+  const openBtn = document.querySelector("[data-size-guide-open]");
+  const modal = document.querySelector("[data-size-guide-modal]");
+  if (!openBtn || !modal) return;
+
+  const closeTriggers = modal.querySelectorAll("[data-size-guide-close]");
+
+  function open() {
+    modal.hidden = false;
+    document.body.classList.add("modal-open");
+  }
+
+  function close() {
+    modal.hidden = true;
+    document.body.classList.remove("modal-open");
+    openBtn.focus();
+  }
+
+  openBtn.addEventListener("click", open);
+  closeTriggers.forEach((el) => el.addEventListener("click", close));
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !modal.hidden) close();
+  });
+});

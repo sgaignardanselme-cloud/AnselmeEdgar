@@ -33,6 +33,34 @@
     "cta_primary_label": "Découvrir le drop",
     "cta_secondary_label": "Rejoindre la liste d'attente"
   },
+  "size_guide": {
+    "rows": [
+      {
+        "size": "S",
+        "chest": "",
+        "length": "",
+        "shoulders": ""
+      },
+      {
+        "size": "M",
+        "chest": "",
+        "length": "",
+        "shoulders": ""
+      },
+      {
+        "size": "L",
+        "chest": "",
+        "length": "",
+        "shoulders": ""
+      },
+      {
+        "size": "XL",
+        "chest": "",
+        "length": "",
+        "shoulders": ""
+      }
+    ]
+  },
   "univers": {
     "intent_title": "[CE QUE RACONTE LA MARQUE, EN UNE LIGNE]",
     "intent_text": "[PLACEHOLDER — écrit à la première personne, court] Ce qu'on écoute, ce qu'on pratique, ce qu'on regarde de trop près : trois carnets qui finissent toujours par se retrouver dans la même pièce. On ne vous explique pas la collection, on vous la montre.",

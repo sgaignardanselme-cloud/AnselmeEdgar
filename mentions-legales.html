@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <script>document.documentElement.classList.add('js');</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <!-- This page uses the plain light --paper theme, not the shader — matches it instead. -->
+  <meta name="theme-color" content="#fbfaf7" />
+  <!-- Placeholder favicon — see the same comment in index.html. -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='7' y='7' width='18' height='18' rx='4' fill='%232d6ce1' transform='rotate(45 16 16)'/%3E%3C/svg%3E" />
+  <title>Mentions légales — [NOM DE LA MARQUE]</title>
+  <meta name="description" content="Mentions légales de [NOM DE LA MARQUE]." />
+  <!-- Open Graph / Twitter Card — voir la même note dans index.html.
+       À remplacer avant mise en ligne (og:url). Pas d'image : une page
+       de mentions légales n'a pas vocation à être partagée. -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Mentions légales — [NOM DE LA MARQUE]" />
+  <meta property="og:description" content="Mentions légales de [NOM DE LA MARQUE]." />
+  <meta property="og:url" content="[À REMPLACER — URL du site]/mentions-legales.html" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Mentions légales — [NOM DE LA MARQUE]" />
+  <meta name="twitter:description" content="Mentions légales de [NOM DE LA MARQUE]." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <link rel="preload" as="style" href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap" rel="stylesheet" />
+  </noscript>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <div class="floating-nav">
+    <a href="index.html" class="floating-logo" data-cms="general.brand_name">[NOM MARQUE]</a>
+    <div class="nav-actions">
+      <a href="panier.html" class="cart-btn" data-cart-btn aria-label="Panier">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 8h12l-1 12H7L6 8Z" />
+          <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+        </svg>
+        <span class="cart-badge" data-cart-badge hidden>0</span>
+      </a>
+      <button class="hamburger-btn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="site-menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="site-menu" id="site-menu">
+    <nav class="site-menu-nav">
+      <ul>
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="index.html#univers">Univers</a></li>
+        <li><a href="index.html#drop">Drop</a></li>
+        <!-- Archives retiré du menu : pas encore de drop passé à archiver
+             (voir archives.html — code gardé intact). -->
+        <li><a href="index.html#contact">Contact</a></li>
+      </ul>
+      <div class="socials">
+        <a href="#" target="_blank" rel="noopener" data-cms-href="general.instagram_url">Instagram</a>
+        <a href="#" target="_blank" rel="noopener" data-cms-href="general.tiktok_url">TikTok</a>
+      </div>
+    </nav>
+  </div>
+
+  <main>
+    <!-- Contenu statique, pas géré par le CMS pour l'instant (comme
+         l'action du formulaire Formspree) — à réécrire une fois le
+         statut juridique de la marque officiellement créé. -->
+    <section class="reveal" style="padding-top:96px;">
+      <div class="container legal-page">
+        <p class="section-label">Informations légales</p>
+        <h1 class="section-title">Mentions légales</h1>
+
+        <h2 class="legal-heading">Éditeur du site</h2>
+        <p class="section-text">
+          [PLACEHOLDER] <span data-cms="general.brand_name">[NOM DE LA MARQUE]</span> —
+          [forme juridique à préciser une fois la structure créée : entreprise
+          individuelle, micro-entreprise, société...].<br />
+          Adresse : [PLACEHOLDER — adresse du siège].<br />
+          Email : [PLACEHOLDER — adresse de contact].<br />
+          [PLACEHOLDER — SIREN/SIRET une fois l'immatriculation faite].
+        </p>
+
+        <h2 class="legal-heading">Directeur de la publication</h2>
+        <p class="section-text">[PLACEHOLDER — nom du responsable de la publication].</p>
+
+        <h2 class="legal-heading">Hébergement</h2>
+        <p class="section-text">
+          Ce site est hébergé par Netlify, Inc. — 44 Montgomery Street, Suite 300,
+          San Francisco, California 94104, USA.
+        </p>
+
+        <h2 class="legal-heading">Propriété intellectuelle</h2>
+        <p class="section-text">
+          [PLACEHOLDER] L'ensemble des contenus présents sur ce site (textes,
+          visuels, logo, identité graphique) est la propriété de
+          <span data-cms="general.brand_name">[NOM DE LA MARQUE]</span>, sauf
+          mention contraire, et ne peut être reproduit sans autorisation
+          préalable.
+        </p>
+
+        <h2 class="legal-heading">Données personnelles</h2>
+        <p class="section-text">
+          [PLACEHOLDER] Les informations transmises via le formulaire de contact
+          (email, réseau préféré) sont utilisées uniquement pour communiquer
+          avec toi au sujet des prochains drops, et ne sont ni vendues ni
+          partagées avec des tiers. Conformément au RGPD, tu peux demander
+          l'accès, la rectification ou la suppression de tes données en
+          écrivant à [PLACEHOLDER — adresse de contact].
+        </p>
+
+        <h2 class="legal-heading">Cookies</h2>
+        <p class="section-text">
+          [PLACEHOLDER] Ce site utilise uniquement le stockage local de ton
+          navigateur (pas de cookie tiers) pour retenir le contenu de ton
+          panier entre deux visites — rien n'est transmis à un serveur ni
+          utilisé à des fins publicitaires.
+        </p>
+
+        <h2 class="legal-heading">Contact</h2>
+        <p class="section-text">
+          Une question ? Écris-nous à [PLACEHOLDER — adresse de contact] ou
+          retrouve-nous sur
+          <a href="#" target="_blank" rel="noopener" data-cms-href="general.instagram_url">Instagram</a>.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-links-row">
+      <p class="footer-brand-name" data-cms="general.brand_name">[NOM DE LA MARQUE]</p>
+      <nav class="footer-nav" aria-label="Réseaux sociaux et informations">
+        <a href="#" target="_blank" rel="noopener" data-cms-href="general.instagram_url">Instagram</a>
+        <a href="#" target="_blank" rel="noopener" data-cms-href="general.tiktok_url">TikTok</a>
+        <a href="mentions-legales.html" class="is-active">Mentions légales</a>
+      </nav>
+    </div>
+    <div class="container">
+      <p>&copy; <span data-current-year>2026</span> <span data-cms="general.brand_name">[NOM DE LA MARQUE]</span>. Tous droits réservés.</p>
+      <p data-cms="general.footer_legal">[PLACEHOLDER — statut juridique / mention légale à venir]</p>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+  <script src="js/content.js"></script>
+</body>
+</html>
