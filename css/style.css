@@ -18,14 +18,20 @@
   --ink-muted: rgba(27, 42, 74, 0.6);
   --ink-muted-strong: rgba(27, 42, 74, 0.82);
   --surface: #eef0f6;
-  /* Four explicit stops rather than two: interpolating RGB straight from
-     a very light to a very dark blue crosses a desaturated, grey-looking
-     midpoint. Anchoring the path through two genuinely saturated blues
-     at 33%/66% keeps every point along the gradient reading as "blue". */
+  /* Still used by .hero-media's own glow-behind-the-poster gradient
+     (a decorative layer, not the page background) — kept standalone now
+     that the other 3 stops it used to form a full-page gradient with
+     are gone (see body.scrollytelling below). */
   --gradient-stop-1: #dceefb;
-  --gradient-stop-2: #6faedb;
-  --gradient-stop-3: #1f5c99;
-  --gradient-stop-4: #071b33;
+  /* Flat colour shown behind the ShaderGradient canvas — before it
+     mounts, and if WebGL fails to load entirely — not a duplicate
+     gradient. Chosen to sit close to the animated shader's own tone
+     (index.html) so that brief moment doesn't read as a mismatched
+     flash. --shader-fallback-bg-bright is the equivalent for
+     produit.html/panier.html's brighter "static" shader variant (see
+     body.scrollytelling.static-shader-page). */
+  --shader-fallback-bg: #1f5c99;
+  --shader-fallback-bg-bright: #2d6ce1;
   /* Default = --ink's own channels, so any page without .scrollytelling
      (archives.html) reads exactly as before: static dark text on its
      light paper background. The scrollytelling page (index.html)
@@ -92,11 +98,16 @@ body {
   }
 }
 
-/* Scrollytelling page (index.html): one continuous blue gradient sized
-   to the full document height (background-attachment stays "scroll",
-   the default — never "fixed", or it would just tile per viewport
-   instead of spanning the whole page) — light at top, near-black at
-   bottom, so scrolling naturally reads as the page darkening. */
+/* Scrollytelling pages (index.html, produit.html, panier.html): the
+   ShaderGradient canvas (.site-shader-bg below) is the only background —
+   this is just a flat colour shown for the brief moment before React
+   mounts it, and as a fallback if WebGL fails to load entirely. A full
+   multi-stop gradient used to sit here underneath the canvas at all
+   times, but the canvas fully covers it the instant it mounts, so it was
+   pure duplicated rendering cost with no visible benefit — and on a slow
+   mobile connection, the gap between "pale gradient top" and "medium-
+   blue shader" was a visible mismatch flash, which a single close-toned
+   flat colour doesn't produce. */
 /* Text sitting directly on this background (or on the ShaderGradient
    layered on top of it, see .site-shader-bg) is always white — the
    background is never a plain white/light surface, so unlike --ink
@@ -106,20 +117,23 @@ body {
    dark value untouched. */
 body.scrollytelling {
   --text-rgb: 255, 255, 255;
-  background: linear-gradient(
-    180deg,
-    var(--gradient-stop-1) 0%,
-    var(--gradient-stop-2) 33%,
-    var(--gradient-stop-3) 66%,
-    var(--gradient-stop-4) 100%
-  );
+  background: var(--shader-fallback-bg);
   color: var(--text);
 }
 
-/* Animated ShaderGradient background (mounted by js/shader-bg.bundle.js,
-   built from src/shader-bg/). Sits behind the whole scroll as a fixed
-   layer, on top of body's own static gradient — the static gradient
-   stays as a fallback in case the WebGL canvas fails to load. */
+/* produit.html/panier.html (body.static-shader-page) render a brighter
+   shader variant than index.html's — see the button-contrast overrides
+   further down — so their flat fallback needs to match that brighter
+   family too, or a WebGL failure would leave those pages' dark-ink
+   button text unreadable against a background darker than what they're
+   actually designed against. */
+body.scrollytelling.static-shader-page {
+  background: var(--shader-fallback-bg-bright);
+}
+
+/* ShaderGradient canvas (mounted by js/shader-bg.bundle.js, built from
+   src/shader-bg/) — the site's only background on these pages now, a
+   fixed layer sitting on top of body's flat fallback colour above. */
 .site-shader-bg {
   position: fixed;
   inset: 0;

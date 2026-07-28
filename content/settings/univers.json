@@ -1,0 +1,16 @@
+{
+  "intent_title": "[CE QUE RACONTE LA MARQUE, EN UNE LIGNE]",
+  "intent_text": "[PLACEHOLDER — écrit à la première personne, court] Ce qu'on écoute, ce qu'on pratique, ce qu'on regarde de trop près : trois carnets qui finissent toujours par se retrouver dans la même pièce. On ne vous explique pas la collection, on vous la montre.",
+  "piece": {
+    "year": "[ANNÉE]",
+    "title": "[NOM DU DROP]",
+    "meta": "[Matières / technique — ex : coton, laine, techniques mixtes]",
+    "note": "[PLACEHOLDER — une phrase courte, façon note de commissaire, pas un paragraphe explicatif.]",
+    "image": ""
+  },
+  "masterpiece": {
+    "name": "[NOM DE L'OBJET SYMBOLE]",
+    "note": "[PLACEHOLDER — une phrase courte : ce que l'objet représente, pas son explication complète.]",
+    "image": ""
+  }
+}

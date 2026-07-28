@@ -21,7 +21,7 @@
   <div id="shader-bg" class="site-shader-bg" data-shader-variant="static" aria-hidden="true"></div>
 
   <div class="floating-nav">
-    <a href="index.html#accueil" class="floating-logo">[NOM MARQUE]</a>
+    <a href="index.html#accueil" class="floating-logo" data-cms="general.brand_name">[NOM MARQUE]</a>
     <div class="nav-actions">
       <a href="panier.html" class="cart-btn" data-cart-btn aria-label="Panier">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -46,8 +46,8 @@
         <li><a href="index.html#contact">Contact</a></li>
       </ul>
       <div class="socials">
-        <a href="#" target="_blank" rel="noopener">Instagram</a>
-        <a href="#" target="_blank" rel="noopener">TikTok</a>
+        <a href="#" target="_blank" rel="noopener" data-cms-href="general.instagram_url">Instagram</a>
+        <a href="#" target="_blank" rel="noopener" data-cms-href="general.tiktok_url">TikTok</a>
       </div>
     </nav>
   </div>
@@ -77,8 +77,8 @@
 
   <footer class="site-footer">
     <div class="container">
-      <p>&copy; 2026 [NOM DE LA MARQUE]. Tous droits réservés.</p>
-      <p>[PLACEHOLDER — statut juridique / mention légale à venir]</p>
+      <p>&copy; 2026 <span data-cms="general.brand_name">[NOM DE LA MARQUE]</span>. Tous droits réservés.</p>
+      <p data-cms="general.footer_legal">[PLACEHOLDER — statut juridique / mention légale à venir]</p>
     </div>
   </footer>
 
@@ -86,5 +86,6 @@
   <!-- Bundle React/Three.js buildé depuis src/shader-bg/ via `npm run build:shader`
        (voir vite.config.js) — monte le fond animé dans #shader-bg. -->
   <script defer src="js/shader-bg.bundle.js"></script>
+  <script src="js/content.js"></script>
 </body>
 </html>

@@ -1,0 +1,11 @@
+{
+  "drop_name": "[NOM DU DROP]",
+  "image": "",
+  "intro_text": "[PLACEHOLDER] Le thème du drop expliqué : l'histoire derrière la collection, ce qui l'a inspirée, ce qu'elle raconte visuellement.",
+  "release_date": "2026-12-01T00:00:00.000Z",
+  "quantity": 48,
+  "price": "",
+  "waitlist_title": "Ne rate pas la sortie",
+  "waitlist_text": "[PLACEHOLDER] Rejoins la liste d'attente pour être prévenu·e dès l'ouverture des ventes.",
+  "waitlist_cta_label": "Rejoindre la liste d'attente"
+}

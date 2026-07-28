@@ -1,0 +1,82 @@
+[
+  {
+    "slug": "piece-1",
+    "name": "[Nom de la pièce 1]",
+    "price": 65,
+    "short_description": "[PLACEHOLDER] Description courte de la pièce : matière, coupe, détail qui la distingue.",
+    "materials": "[PLACEHOLDER] 100% coton biologique, grammage 280g/m², confectionné en [pays]. À remplacer par la vraie composition de chaque produit.",
+    "image": "",
+    "gallery": [],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "order": 1
+  },
+  {
+    "slug": "piece-2",
+    "name": "[Nom de la pièce 2]",
+    "price": 65,
+    "short_description": "[PLACEHOLDER] Description courte de la pièce : matière, coupe, détail qui la distingue.",
+    "materials": "[PLACEHOLDER] 100% coton biologique, grammage 280g/m², confectionné en [pays]. À remplacer par la vraie composition de chaque produit.",
+    "image": "",
+    "gallery": [],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "order": 2
+  },
+  {
+    "slug": "piece-3",
+    "name": "[Nom de la pièce 3]",
+    "price": 65,
+    "short_description": "[PLACEHOLDER] Description courte de la pièce : matière, coupe, détail qui la distingue.",
+    "materials": "[PLACEHOLDER] 100% coton biologique, grammage 280g/m², confectionné en [pays]. À remplacer par la vraie composition de chaque produit.",
+    "image": "",
+    "gallery": [],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "order": 3
+  },
+  {
+    "slug": "piece-4",
+    "name": "[Nom de la pièce 4]",
+    "price": 65,
+    "short_description": "[PLACEHOLDER] Description courte de la pièce : matière, coupe, détail qui la distingue.",
+    "materials": "[PLACEHOLDER] 100% coton biologique, grammage 280g/m², confectionné en [pays]. À remplacer par la vraie composition de chaque produit.",
+    "image": "",
+    "gallery": [],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "order": 4
+  },
+  {
+    "slug": "piece-5",
+    "name": "[Nom de la pièce 5]",
+    "price": 65,
+    "short_description": "[PLACEHOLDER] Description courte de la pièce : matière, coupe, détail qui la distingue.",
+    "materials": "[PLACEHOLDER] 100% coton biologique, grammage 280g/m², confectionné en [pays]. À remplacer par la vraie composition de chaque produit.",
+    "image": "",
+    "gallery": [],
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "order": 5
+  }
+]

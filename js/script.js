@@ -351,8 +351,7 @@ function showToast(message) {
   const countdown = document.querySelector(".flip-countdown");
   if (!countdown) return;
 
-  const targetDate = new Date(countdown.dataset.countdownTarget);
-  if (Number.isNaN(targetDate.getTime())) return;
+  if (Number.isNaN(new Date(countdown.dataset.countdownTarget).getTime())) return;
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const units = {
@@ -381,6 +380,13 @@ function showToast(message) {
   }
 
   function tick() {
+    // Re-read the attribute on every tick instead of caching a single
+    // Date at setup — content.js may update data-countdown-target
+    // asynchronously (once the CMS's release date has loaded), after
+    // this IIFE has already run. Re-parsing a short string every second
+    // is free; caching it once would mean the countdown silently keeps
+    // counting down to the stale placeholder date forever.
+    const targetDate = new Date(countdown.dataset.countdownTarget);
     const diffMs = Math.max(0, targetDate.getTime() - Date.now());
     const totalSeconds = Math.floor(diffMs / 1000);
 
@@ -452,94 +458,12 @@ function showToast(message) {
   window.addEventListener("resize", onScroll);
 })();
 
-// Product page: size selector (S/M/L/XL, one active at a time), the
-// quantity stepper (min 1, max 10, keeps the total price and the
-// "X pièce(s)" wording in sync), and "Ajouter au panier". Clicking it
-// without a size picked just surfaces the inline note asking for one;
-// with a size picked, it stores the line item in the global Cart and
-// shows the toast. Only present on produit.html — everywhere else these
-// selectors come back empty and the block no-ops.
-(() => {
-  const selector = document.querySelector("[data-size-selector]");
-  const addToCartBtn = document.querySelector("[data-add-to-cart-btn]");
-  if (!selector || !addToCartBtn) return;
-
-  const options = Array.from(selector.querySelectorAll(".size-option"));
-  const note = document.querySelector("[data-size-note]");
-  let selectedSize = null;
-
-  options.forEach((option) => {
-    option.setAttribute("aria-pressed", "false");
-    option.addEventListener("click", () => {
-      options.forEach((o) => {
-        o.classList.remove("is-selected");
-        o.setAttribute("aria-pressed", "false");
-      });
-      option.classList.add("is-selected");
-      option.setAttribute("aria-pressed", "true");
-      selectedSize = option.dataset.size;
-      if (note) note.hidden = true;
-    });
-  });
-
-  const MIN_QUANTITY = 1;
-  const MAX_QUANTITY = 10;
-  let quantity = MIN_QUANTITY;
-
-  const decreaseBtn = document.querySelector("[data-quantity-decrease]");
-  const increaseBtn = document.querySelector("[data-quantity-increase]");
-  const quantityValueEl = document.querySelector("[data-quantity-value]");
-  const quantityEchoEls = document.querySelectorAll("[data-quantity-echo]");
-  const quantityPluralEls = document.querySelectorAll("[data-quantity-plural]");
-  const unitPriceEl = document.querySelector("[data-unit-price]");
-  const totalPriceEl = document.querySelector("[data-total-price]");
-  const unitPrice = unitPriceEl ? parseFloat(unitPriceEl.dataset.unitPrice) : NaN;
-
-  function updateQuantityUI() {
-    if (quantityValueEl) quantityValueEl.textContent = quantity;
-    if (decreaseBtn) decreaseBtn.disabled = quantity <= MIN_QUANTITY;
-    if (increaseBtn) increaseBtn.disabled = quantity >= MAX_QUANTITY;
-    quantityEchoEls.forEach((el) => {
-      el.textContent = quantity;
-    });
-    quantityPluralEls.forEach((el) => {
-      el.hidden = quantity <= 1;
-    });
-    if (totalPriceEl && Number.isFinite(unitPrice)) {
-      totalPriceEl.textContent = unitPrice * quantity;
-    }
-  }
-
-  if (decreaseBtn && increaseBtn) {
-    decreaseBtn.addEventListener("click", () => {
-      quantity = Math.max(MIN_QUANTITY, quantity - 1);
-      updateQuantityUI();
-    });
-    increaseBtn.addEventListener("click", () => {
-      quantity = Math.min(MAX_QUANTITY, quantity + 1);
-      updateQuantityUI();
-    });
-    updateQuantityUI();
-  }
-
-  const nameEl = document.querySelector(".product-info h1");
-
-  addToCartBtn.addEventListener("click", () => {
-    if (!selectedSize) {
-      if (note) note.hidden = false;
-      return;
-    }
-
-    Cart.add({
-      name: nameEl ? nameEl.textContent.trim() : "Produit",
-      size: selectedSize,
-      quantity,
-      unitPrice: Number.isFinite(unitPrice) ? unitPrice : null,
-    });
-
-    showToast("Ajouté au panier");
-  });
-})();
+// Product page (size selector, quantity stepper, "Ajouter au panier") has
+// moved to js/content.js — it now needs the CMS-driven product data
+// (which sizes actually exist for THIS product, its real price) before it
+// can build the size buttons or know what to add to the cart, so it's
+// wired up there once that data has loaded rather than against static
+// markup here.
 
 // Cart page: renders every line item from the global Cart, lets each be
 // adjusted (quantity, min 1 / max 10 — same bounds as the product page's

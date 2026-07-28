@@ -1,0 +1,126 @@
+backend:
+  name: git-gateway
+  branch: main
+
+# Netlify Identity + Git Gateway (configured in the Netlify dashboard, not
+# here — see README.md "Administration du contenu (CMS)") — every commit
+# Decap makes is authenticated as the logged-in Identity user and pushed
+# straight to `branch` above, exactly like a normal git push.
+publish_mode: simple
+
+# Only kicks in when the CMS is opened from localhost — lets you test
+# /admin locally (edits write straight to your local files) by running
+# `npx decap-server` in a second terminal alongside your usual dev
+# server, with no Netlify Identity login needed. Has no effect on the
+# deployed site, where git-gateway above is what's actually used.
+local_backend: true
+
+media_folder: "images/uploads"
+public_folder: "/images/uploads"
+
+collections:
+  - name: "settings"
+    label: "Réglages du site"
+    editor:
+      preview: false
+    files:
+      - label: "Général (nom de la marque, réseaux sociaux, footer)"
+        name: "general"
+        file: "content/settings/general.json"
+        fields:
+          - { label: "Nom de la marque", name: "brand_name", widget: "string", hint: "Affiché dans le logo (haut de chaque page), le titre d'onglet du navigateur et le grand titre d'ouverture de la page d'accueil." }
+          - { label: "Description du site (SEO)", name: "meta_description", widget: "text" }
+          - { label: "Lien Instagram", name: "instagram_url", widget: "string", required: false }
+          - { label: "Lien TikTok", name: "tiktok_url", widget: "string", required: false }
+          - { label: "Mention légale (footer)", name: "footer_legal", widget: "string" }
+
+      - label: "Accueil — Hero"
+        name: "hero"
+        file: "content/settings/hero.json"
+        fields:
+          - { label: "Phrase d'accroche", name: "headline", widget: "text", hint: "Le grand titre de la première section. Un retour à la ligne (touche Entrée) est possible et sera respecté à l'affichage." }
+          - { label: "Sous-titre", name: "subtitle", widget: "string" }
+          - { label: "Visuel principal (affiche du drop)", name: "image", widget: "image", required: false }
+          - { label: "Texte du bouton principal", name: "cta_primary_label", widget: "string" }
+          - { label: "Texte du bouton secondaire", name: "cta_secondary_label", widget: "string" }
+
+      - label: "Univers"
+        name: "univers"
+        file: "content/settings/univers.json"
+        fields:
+          - { label: "Titre — note d'intention", name: "intent_title", widget: "string" }
+          - { label: "Texte — note d'intention", name: "intent_text", widget: "text", hint: "Le texte de storytelling (musique / sport / art)." }
+          - label: "Pièce exposée"
+            name: "piece"
+            widget: "object"
+            fields:
+              - { label: "Année", name: "year", widget: "string" }
+              - { label: "Nom du drop / de la pièce", name: "title", widget: "string" }
+              - { label: "Matières / technique", name: "meta", widget: "string" }
+              - { label: "Note (façon commissaire d'exposition)", name: "note", widget: "text" }
+              - { label: "Visuel", name: "image", widget: "image", required: false }
+          - label: "Pièce maîtresse (collection permanente)"
+            name: "masterpiece"
+            widget: "object"
+            fields:
+              - { label: "Nom de l'objet", name: "name", widget: "string" }
+              - { label: "Description", name: "note", widget: "text" }
+              - { label: "Visuel", name: "image", widget: "image", required: false }
+
+      - label: "Drop en cours"
+        name: "drop"
+        file: "content/settings/drop.json"
+        fields:
+          - { label: "Nom du drop", name: "drop_name", widget: "string" }
+          - { label: "Visuel principal du drop", name: "image", widget: "image", required: false }
+          - { label: "Texte de présentation", name: "intro_text", widget: "text" }
+          - { label: "Date de sortie", name: "release_date", widget: "datetime" }
+          - { label: "Quantité disponible", name: "quantity", widget: "number", value_type: "int" }
+          - { label: "Prix (si unique pour tout le drop)", name: "price", widget: "string", required: false, hint: "Laisser vide si le prix varie par pièce (voir la collection Produits)." }
+          - { label: "Titre — bloc liste d'attente", name: "waitlist_title", widget: "string" }
+          - { label: "Texte — bloc liste d'attente", name: "waitlist_text", widget: "text" }
+          - { label: "Texte du bouton — liste d'attente", name: "waitlist_cta_label", widget: "string" }
+
+      - label: "Contact"
+        name: "contact"
+        file: "content/settings/contact.json"
+        fields:
+          - { label: "Titre", name: "title", widget: "string" }
+          - { label: "Texte d'introduction", name: "text", widget: "text" }
+          - { label: "Note sous le formulaire", name: "form_note", widget: "text" }
+
+      - label: "Archives"
+        name: "archives"
+        file: "content/settings/archives.json"
+        fields:
+          - { label: "Titre", name: "title", widget: "string" }
+          - { label: "Message quand aucun drop archivé", name: "empty_message", widget: "text" }
+
+  - name: "products"
+    label: "Produits (pièces du drop)"
+    label_singular: "Produit"
+    folder: "content/products"
+    create: true
+    delete: true
+    slug: "{{fields.name}}"
+    summary: "{{name}} — {{price}} €"
+    editor:
+      preview: false
+    fields:
+      - { label: "Nom du produit", name: "name", widget: "string" }
+      - { label: "Prix (€)", name: "price", widget: "number", value_type: "float" }
+      - { label: "Description courte", name: "short_description", widget: "text", hint: "Affichée sur la fiche produit, sous le prix." }
+      - { label: "Matières / composition", name: "materials", widget: "text", hint: "Ex : 100% coton biologique, grammage 280g/m², confectionné en France." }
+      - { label: "Photo principale", name: "image", widget: "image" }
+      - label: "Photos additionnelles"
+        name: "gallery"
+        widget: "list"
+        required: false
+        field: { label: "Photo", name: "image", widget: "image" }
+      - label: "Tailles disponibles"
+        name: "sizes"
+        widget: "select"
+        multiple: true
+        options: ["S", "M", "L", "XL"]
+        default: ["S", "M", "L", "XL"]
+      - { label: "Ordre d'affichage", name: "order", widget: "number", value_type: "int", default: 1, hint: "Les produits s'affichent du plus petit au plus grand numéro." }

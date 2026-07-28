@@ -1,0 +1,12 @@
+[build]
+  # Runs on every push (including the commits Decap CMS makes on your
+  # behalf when you click "Publier"): recompiles content/settings + the
+  # per-product files in content/products into data/settings.json /
+  # data/products.json, then rebuilds the shader background bundle.
+  command = "npm run build"
+  publish = "."
+
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"
