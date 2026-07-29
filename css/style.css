@@ -1,29 +1,3 @@
-/* ---------- iOS Safari rubber-band overscroll fix ---------- */
-/* Deliberately first in the file, before :root/anything else. iOS
-   Safari's overscroll/rubber-band effect reveals a strip beyond the
-   normal document bounds (past the top when you pull down at the very
-   top of the page, past the bottom symmetrically) that NOTHING in the
-   page can paint into — not even a position:fixed, full-height canvas —
-   because that strip sits outside the visual viewport fixed positioning
-   is computed against. Safari's own fallback for that strip is <html>'s
-   background colour, so the only real fix is making sure that colour is
-   never the default white/transparent: it has to match whichever
-   ShaderGradient variant is actually running on the current page/state,
-   or the mismatch reads as a stray grey-blue band during the bounce.
-   This rule is the universal floor (matches the "animated" variant —
-   index.html's default) so nothing is ever left unset; the more
-   specific per-page-type rules further down (body.scrollytelling,
-   .static-shader-page, .menu-open) override it with each context's own
-   actual tone. Lower specificity than all of those on purpose — a
-   plain element selector, so it never has to fight to lose. */
-html,
-body {
-  background-color: #1f5c99;
-  margin: 0;
-  padding: 0;
-  height: 100%;
-}
-
 /* =========================================================
    [PLACEHOLDER MARQUE] — Site vitrine V1
    Palette : sur la page en défilement (`body.scrollytelling`), le fond
@@ -49,24 +23,6 @@ body {
      that the other 3 stops it used to form a full-page gradient with
      are gone (see body.scrollytelling below). */
   --gradient-stop-1: #dceefb;
-  /* Flat colour shown behind the ShaderGradient canvas — before it
-     mounts, and if WebGL fails to load entirely — not a duplicate
-     gradient. Chosen to sit close to the animated shader's own tone
-     (index.html) so that brief moment doesn't read as a mismatched
-     flash. --shader-fallback-bg-bright is the equivalent for
-     produit.html/panier.html's brighter "static" shader variant (see
-     body.scrollytelling.static-shader-page). */
-  --shader-fallback-bg: #1f5c99;
-  --shader-fallback-bg-bright: #2d6ce1;
-  /* Rough average of the site-menu drawer's own "menu" ShaderGradient
-     variant (#2d26ff/#35c2db/#20cae1 — see src/shader-bg/ShaderBackground.jsx)
-     — a different palette from the two above, so it needs its own
-     fallback rather than reusing either. Applied via html.menu-open/
-     body.menu-open (further down), toggled by script.js alongside the
-     menu's own open/close state — otherwise overscrolling while the
-     drawer is open would rubber-band to the *page's* colour instead of
-     the drawer's. */
-  --shader-fallback-bg-menu: #2c8fe0;
   /* Default = --ink's own channels, so any page without .scrollytelling
      (archives.html) reads exactly as before: static dark text on its
      light paper background. The scrollytelling page (index.html)
@@ -141,15 +97,16 @@ body {
 }
 
 /* Scrollytelling pages (index.html, produit.html, panier.html): the
-   ShaderGradient canvas (.site-shader-bg below) is the only background —
-   this is just a flat colour shown for the brief moment before React
-   mounts it, and as a fallback if WebGL fails to load entirely. A full
-   multi-stop gradient used to sit here underneath the canvas at all
-   times, but the canvas fully covers it the instant it mounts, so it was
-   pure duplicated rendering cost with no visible benefit — and on a slow
-   mobile connection, the gap between "pale gradient top" and "medium-
-   blue shader" was a visible mismatch flash, which a single close-toned
-   flat colour doesn't produce. */
+   ShaderGradient canvas (.site-shader-bg below) is the real background —
+   this is just what shows for the brief moment before it mounts, if
+   WebGL fails to load entirely, and in the iOS Safari rubber-band/
+   overscroll strip that no fixed-position layer can ever paint into
+   (nothing sits "behind" the canvas there — Safari just shows html's own
+   background colour). Several rounds of trying to colour-match this to
+   each shader variant (per page, and per menu-open state) made the
+   overscroll band read as a *worse* mismatch than plain white, not a
+   better one — simple and reliable wins here over a closer-but-fragile
+   colour match: plain white, no per-page/per-state variants. */
 /* Text sitting directly on this background (or on the ShaderGradient
    layered on top of it, see .site-shader-bg) is always white — the
    background is never a plain white/light surface, so unlike --ink
@@ -159,47 +116,20 @@ body {
    dark value untouched. */
 body.scrollytelling {
   --text-rgb: 255, 255, 255;
-  background: var(--shader-fallback-bg);
+  background: #fff;
   color: var(--text);
 }
 
-/* produit.html/panier.html (body.static-shader-page) render a brighter
-   shader variant than index.html's — see the button-contrast overrides
-   further down — so their flat fallback needs to match that brighter
-   family too, or a WebGL failure would leave those pages' dark-ink
-   button text unreadable against a background darker than what they're
-   actually designed against. */
-body.scrollytelling.static-shader-page {
-  background: var(--shader-fallback-bg-bright);
-}
-
-/* Same two rules again, but on <html> (which carries these same classes
-   in the markup) rather than <body>. Normally the "canvas background" —
-   what paints behind everything, including the safe-area strips at the
-   very top/bottom of a notched phone — propagates from body up to html
+/* Same rule again, but on <html> (which carries this same class in the
+   markup) rather than <body>. Normally the "canvas background" — what
+   paints behind everything, including the safe-area strips at the very
+   top/bottom of a notched phone — propagates from body up to html
    automatically per spec, but that propagation is exactly the kind of
    thing individual mobile browsers have historically been inconsistent
    about; setting it explicitly on html too removes any doubt rather
    than depending on that propagation happening correctly everywhere. */
 html.scrollytelling {
-  background: var(--shader-fallback-bg);
-}
-
-html.scrollytelling.static-shader-page {
-  background: var(--shader-fallback-bg-bright);
-}
-
-/* While the drawer is open, both <html> and <body> switch to the menu's
-   own shader tone — unscoped to .scrollytelling on purpose, so this also
-   applies on archives.html/mentions-legales.html (plain light theme
-   normally, but what's actually visible with the menu open is its dark
-   panel, not their own paper background). script.js's openMenu()/
-   closeMenu() toggle .menu-open on both elements, not just <body> —
-   same "set it on html too, don't rely on propagation" reasoning as the
-   .scrollytelling rules above. */
-html.menu-open,
-body.menu-open {
-  background-color: var(--shader-fallback-bg-menu);
+  background: #fff;
 }
 
 /* ShaderGradient canvas (mounted by js/shader-bg.bundle.js, built from
@@ -913,115 +843,6 @@ body.menu-open .cart-btn {
   .dot-nav-item {
     transform: none !important;
   }
-}
-
-/* ---------- Progress rail ---------- */
-/* A fixed vertical thread down the left edge — always visible on screen
-   (it never scrolls away, unlike a line drawn into the document), with a
-   marker that slides down it in step with scroll position: a reading
-   gauge for how far through the page you are. Reuses --text-rgb (the
-   same token driving body-copy colour) rather than its own colour logic
-   — since it's also "sitting on" whatever part of the gradient is
-   currently on screen, the contrast math is identical.
-   Also interactive (see script.js): the box itself is widened to a real
-   touch/drag target — the visible 1px thread stays exactly where it
-   always was, flush with the box's own left edge, via ::before below,
-   so only the *hit area* grows, nothing shifts visually.
-   touch-action:none is what stops the browser's own touch-scroll from
-   fighting our drag handling the instant a finger lands here — scoped to
-   this element alone, so scrolling anywhere else on the page is
-   completely untouched (native, no JS involved).
-   Width/left below 1140px (.container's max-width of 1100px + its 20px
-   side padding — the point below which .container has no real empty
-   margin and its content starts right at the viewport edge) is
-   deliberately narrow: a full 32px hit-box at left:24px used to overlap
-   ~20-36px into that content area, silently swallowing taps meant for
-   whatever sat flush-left there (nav logo aside, which wins on z-index,
-   but any left-aligned button/link further down the page). Audit found
-   this eating real clicks at exactly the 375-430px widths the rail is
-   most meant to work on. Widens back out once there's guaranteed empty
-   gutter to use instead. */
-.progress-rail {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  /* Same reasoning as .site-shader-bg — explicit height rather than
-     relying on bottom:0 alone. A 1px line falling a little short is easy
-     to miss, but no reason to leave it inconsistent with the rest. */
-  height: 100vh;
-  height: 100svh;
-  height: 100dvh;
-  left: 8px;
-  width: 20px;
-  z-index: 140;
-  background: transparent;
-  cursor: ns-resize;
-  touch-action: none;
-}
-
-@media (min-width: 1140px) {
-  .progress-rail {
-    left: 24px;
-    width: 32px;
-  }
-}
-
-.progress-rail::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: rgba(var(--text-rgb), 0.22);
-  pointer-events: none;
-}
-
-.progress-rail-marker {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgb(var(--text-rgb));
-  box-shadow: 0 0 8px rgba(var(--text-rgb), 0.5);
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-}
-
-/* One per nav-worthy section (same 4 as .dot-nav — the opening "marque"
-   chapter has no nav entry anywhere else on the site either), injected
-   by script.js at each section's actual scroll position. Sized to the
-   same touch-friendly box as the rail itself; only the small inner dot
-   is visible. */
-.progress-rail-tick {
-  position: absolute;
-  left: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transform: translate(-50%, -50%);
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-}
-
-.progress-rail-tick-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(var(--text-rgb), 0.5);
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.progress-rail-tick:hover .progress-rail-tick-dot,
-.progress-rail-tick:focus-visible .progress-rail-tick-dot {
-  background: rgb(var(--text-rgb));
-  transform: scale(1.5);
 }
 
 /* ---------- Signature (opening chapter, before the hero) ---------- */

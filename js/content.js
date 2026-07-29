@@ -444,9 +444,4 @@
     }
   }
 
-  // Real CMS copy (and, on index.html, the re-rendered "Les pièces" grid)
-  // can be taller or shorter than the placeholder content the progress
-  // rail's section ticks were positioned against on first paint — see
-  // the comment by window.refreshProgressRail in script.js.
-  if (window.refreshProgressRail) window.refreshProgressRail();
 })();

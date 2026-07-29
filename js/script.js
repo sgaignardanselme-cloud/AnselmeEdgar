@@ -1,3 +1,15 @@
+// Always start at the top of the page on load/reload — deliberately no
+// smarter logic than this one unconditional call (no restoring "where
+// you were", no distinguishing a genuine reload from a fresh visit with
+// a #section already in the URL). history.scrollRestoration is already
+// set to "manual" inline in <head> (before the browser would otherwise
+// apply its own remembered position); this is the second half — it runs
+// here, after the whole page has been parsed, which is also after the
+// browser's native jump-to-#anchor would already have happened if the
+// URL had a hash, so this call is what actually wins and leaves the
+// page at the very top regardless of either of those.
+window.scrollTo(0, 0);
+
 // Page transition: the entry fade is a pure CSS animation (see `body`
 // in css/style.css) that runs on its own without waiting on any script.
 // This just handles the exit fade before following an internal link.
@@ -68,11 +80,6 @@ document.addEventListener("DOMContentLoaded", () => {
     toggle.classList.remove("is-open");
     toggle.setAttribute("aria-expanded", "false");
     document.body.classList.remove("menu-open");
-    // Also on <html> — html.menu-open/body.menu-open in style.css both
-    // switch the iOS rubber-band overscroll fallback colour to the
-    // menu's own shader tone; setting it in both places doesn't rely on
-    // that propagating from body to html on its own.
-    document.documentElement.classList.remove("menu-open");
   }
 
   function openMenu() {
@@ -84,7 +91,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // one other .floating-nav control the hamburger's own .is-open fade
     // doesn't already cover, since it isn't the hamburger itself.
     document.body.classList.add("menu-open");
-    document.documentElement.classList.add("menu-open");
   }
 
   // Only the hamburger opens (single entry point); several things can
@@ -478,143 +484,6 @@ function showToast(message) {
   );
 
   sections.forEach((section) => observer.observe(section));
-})();
-
-// Progress rail: the marker still just tracks scroll position on a plain
-// scroll (0% at the top, 100% at the bottom, not gated behind
-// prefers-reduced-motion — like the adaptive text colour, this tracks
-// scroll position directly rather than playing an independent
-// animation) — but the rail is now interactive on top of that:
-//   - one .progress-rail-tick button per nav-worthy section (same 4 as
-//     .dot-nav), injected here since each one's position depends on that
-//     section's real, laid-out scroll offset — click/tap smooth-scrolls
-//     straight to it.
-//   - press-dragging anywhere on the rail (mouse or touch — Pointer
-//     Events cover both with one implementation) scrubs the scroll
-//     position live, proportional to where the pointer is on the rail.
-//     The marker is moved directly from the pointer position during the
-//     drag (not derived back from scrollY afterwards), so it never lags
-//     a frame behind the finger/cursor.
-(() => {
-  const rail = document.querySelector("[data-progress-rail]");
-  const marker = document.querySelector(".progress-rail-marker");
-  if (!rail || !marker) return;
-
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  function maxScroll() {
-    return Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-  }
-
-  function scrollProgress() {
-    const max = maxScroll();
-    return max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
-  }
-
-  function setMarker(progress) {
-    marker.style.top = `${progress * 100}%`;
-  }
-
-  // ---- Passive tracking: marker follows normal scroll, as before —
-  // paused while actively dragging, since the drag handler below is
-  // already driving the marker (and the scroll position) directly. ----
-  let ticking = false;
-  let dragging = false;
-
-  function onScroll() {
-    if (dragging || ticking) return;
-    ticking = true;
-    window.requestAnimationFrame(() => {
-      setMarker(scrollProgress());
-      ticking = false;
-    });
-  }
-
-  setMarker(scrollProgress());
-  window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("resize", onScroll);
-
-  // ---- Section ticks ----
-  const sections = Array.from(document.querySelectorAll(".scroll-section[id]")).filter(
-    // The opening "marque" chapter has no nav entry anywhere else on the
-    // site either (see .dot-nav) — same convention here.
-    (section) => section.id !== "marque"
-  );
-
-  function capitalize(id) {
-    return id.charAt(0).toUpperCase() + id.slice(1);
-  }
-
-  const ticks = sections.map((section) => {
-    const tick = document.createElement("button");
-    tick.type = "button";
-    tick.className = "progress-rail-tick";
-    tick.setAttribute("aria-label", `Aller à la section ${capitalize(section.id)}`);
-    tick.innerHTML = '<span class="progress-rail-tick-dot"></span>';
-    tick.addEventListener("click", () => {
-      section.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
-    });
-    rail.appendChild(tick);
-    return { section, el: tick };
-  });
-
-  function layoutTicks() {
-    const max = maxScroll();
-    ticks.forEach(({ section, el }) => {
-      const progress = max > 0 ? Math.min(1, Math.max(0, section.offsetTop / max)) : 0;
-      el.style.top = `${progress * 100}%`;
-    });
-  }
-
-  layoutTicks();
-  window.addEventListener("resize", layoutTicks);
-
-  // js/content.js fills in CMS text (and rebuilds the "Les pièces" grid)
-  // asynchronously, well after this runs — real copy can be longer or
-  // shorter than the placeholder text, which shifts every section below
-  // it. Exposed so content.js can ask for a recompute once it's actually
-  // done, rather than these ticks staying pinned to stale positions.
-  window.refreshProgressRail = layoutTicks;
-
-  // ---- Drag-to-scrub. Scoped entirely to `rail` — touch-action:none in
-  // CSS is what stops the browser's own touch-scroll gesture from
-  // starting the instant a finger lands here, so this never fights with
-  // (or leaks into) normal scrolling anywhere else on the page. ----
-  function progressFromPointer(event) {
-    const rect = rail.getBoundingClientRect();
-    const relY = (event.clientY - rect.top) / rect.height;
-    return Math.min(1, Math.max(0, relY));
-  }
-
-  function applyProgress(progress) {
-    setMarker(progress);
-    window.scrollTo({ top: progress * maxScroll(), behavior: "auto" });
-  }
-
-  rail.addEventListener("pointerdown", (event) => {
-    // Let a tick's own click handler manage this one instead — dragging
-    // shouldn't hijack a direct tap/click on a section marker.
-    if (event.target.closest(".progress-rail-tick")) return;
-    dragging = true;
-    rail.setPointerCapture(event.pointerId);
-    applyProgress(progressFromPointer(event));
-  });
-
-  rail.addEventListener("pointermove", (event) => {
-    if (!dragging) return;
-    applyProgress(progressFromPointer(event));
-  });
-
-  function endDrag(event) {
-    if (!dragging) return;
-    dragging = false;
-    if (rail.hasPointerCapture(event.pointerId)) {
-      rail.releasePointerCapture(event.pointerId);
-    }
-  }
-
-  rail.addEventListener("pointerup", endDrag);
-  rail.addEventListener("pointercancel", endDrag);
 })();
 
 // Product page (size selector, quantity stepper, "Ajouter au panier") has

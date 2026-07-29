@@ -2,7 +2,7 @@
 <html lang="fr" class="scrollytelling">
 <head>
   <meta charset="UTF-8" />
-  <script>document.documentElement.classList.add('js');</script>
+  <script>document.documentElement.classList.add('js');if('scrollRestoration' in history){history.scrollRestoration='manual';}</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <!-- Colours the mobile browser's own chrome (Chrome Android's address
        bar, Safari's UI tint) to match the shader instead of its default
@@ -133,17 +133,6 @@
     <a href="#drop" class="dot-nav-item" data-dot="drop"><span class="dot-nav-label">Drop</span></a>
     <a href="#contact" class="dot-nav-item" data-dot="contact"><span class="dot-nav-label">Contact</span></a>
   </nav>
-
-  <!-- Fil de progression : ligne fixe + repère qui descend avec le scroll.
-       Interactive (voir script.js) : cliquer/taper un repère de section
-       défile en douceur jusqu'à elle ; cliquer-glisser ou glisser le
-       doigt n'importe où sur la ligne fait défiler la page en direct,
-       proportionnellement à la position sur la ligne. Les repères de
-       section eux-mêmes sont injectés par script.js (leur position
-       dépend de la mise en page réelle, pas codable en dur ici). -->
-  <div class="progress-rail" data-progress-rail role="group" aria-label="Progression et navigation rapide">
-    <span class="progress-rail-marker" aria-hidden="true"></span>
-  </div>
 
   <main>
 
