@@ -68,6 +68,11 @@ document.addEventListener("DOMContentLoaded", () => {
     toggle.classList.remove("is-open");
     toggle.setAttribute("aria-expanded", "false");
     document.body.classList.remove("menu-open");
+    // Also on <html> — html.menu-open/body.menu-open in style.css both
+    // switch the iOS rubber-band overscroll fallback colour to the
+    // menu's own shader tone; setting it in both places doesn't rely on
+    // that propagating from body to html on its own.
+    document.documentElement.classList.remove("menu-open");
   }
 
   function openMenu() {
@@ -79,6 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // one other .floating-nav control the hamburger's own .is-open fade
     // doesn't already cover, since it isn't the hamburger itself.
     document.body.classList.add("menu-open");
+    document.documentElement.classList.add("menu-open");
   }
 
   // Only the hamburger opens (single entry point); several things can

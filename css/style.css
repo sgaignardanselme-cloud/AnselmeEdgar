@@ -1,3 +1,29 @@
+/* ---------- iOS Safari rubber-band overscroll fix ---------- */
+/* Deliberately first in the file, before :root/anything else. iOS
+   Safari's overscroll/rubber-band effect reveals a strip beyond the
+   normal document bounds (past the top when you pull down at the very
+   top of the page, past the bottom symmetrically) that NOTHING in the
+   page can paint into — not even a position:fixed, full-height canvas —
+   because that strip sits outside the visual viewport fixed positioning
+   is computed against. Safari's own fallback for that strip is <html>'s
+   background colour, so the only real fix is making sure that colour is
+   never the default white/transparent: it has to match whichever
+   ShaderGradient variant is actually running on the current page/state,
+   or the mismatch reads as a stray grey-blue band during the bounce.
+   This rule is the universal floor (matches the "animated" variant —
+   index.html's default) so nothing is ever left unset; the more
+   specific per-page-type rules further down (body.scrollytelling,
+   .static-shader-page, .menu-open) override it with each context's own
+   actual tone. Lower specificity than all of those on purpose — a
+   plain element selector, so it never has to fight to lose. */
+html,
+body {
+  background-color: #1f5c99;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
 /* =========================================================
    [PLACEHOLDER MARQUE] — Site vitrine V1
    Palette : sur la page en défilement (`body.scrollytelling`), le fond
@@ -32,6 +58,15 @@
      body.scrollytelling.static-shader-page). */
   --shader-fallback-bg: #1f5c99;
   --shader-fallback-bg-bright: #2d6ce1;
+  /* Rough average of the site-menu drawer's own "menu" ShaderGradient
+     variant (#2d26ff/#35c2db/#20cae1 — see src/shader-bg/ShaderBackground.jsx)
+     — a different palette from the two above, so it needs its own
+     fallback rather than reusing either. Applied via html.menu-open/
+     body.menu-open (further down), toggled by script.js alongside the
+     menu's own open/close state — otherwise overscrolling while the
+     drawer is open would rubber-band to the *page's* colour instead of
+     the drawer's. */
+  --shader-fallback-bg-menu: #2c8fe0;
   /* Default = --ink's own channels, so any page without .scrollytelling
      (archives.html) reads exactly as before: static dark text on its
      light paper background. The scrollytelling page (index.html)
@@ -152,6 +187,19 @@ html.scrollytelling {
 
 html.scrollytelling.static-shader-page {
   background: var(--shader-fallback-bg-bright);
+}
+
+/* While the drawer is open, both <html> and <body> switch to the menu's
+   own shader tone — unscoped to .scrollytelling on purpose, so this also
+   applies on archives.html/mentions-legales.html (plain light theme
+   normally, but what's actually visible with the menu open is its dark
+   panel, not their own paper background). script.js's openMenu()/
+   closeMenu() toggle .menu-open on both elements, not just <body> —
+   same "set it on html too, don't rely on propagation" reasoning as the
+   .scrollytelling rules above. */
+html.menu-open,
+body.menu-open {
+  background-color: var(--shader-fallback-bg-menu);
 }
 
 /* ShaderGradient canvas (mounted by js/shader-bg.bundle.js, built from
