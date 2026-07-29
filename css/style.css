@@ -1865,16 +1865,27 @@ section {
 }
 
 /* Reuses .frame (bordered, rounded, lit rectangle) — same "framed piece"
-   treatment as the gallery/exhibition pieces. perspective is what makes
-   the rotateY flip below read as a turn rather than a flat squash.
-   touch-action:pan-y is what makes the swipe-to-change-view gesture (see
-   js/content.js) coexist with normal page scrolling — it tells the
-   browser "vertical panning is still yours", so only a clearly
-   horizontal drag gets claimed by the swipe handler, never a scroll. */
+   treatment as the gallery/exhibition pieces — for the border/shadow,
+   but border-radius/overflow are repeated directly here too rather than
+   left to only come from that shared class: reported as rendering with
+   sharp corners on mobile despite .frame's own border-radius:
+   var(--radius-lg) checking out correct in the source with nothing
+   overriding it, so this is the same "stop depending on the indirect
+   mechanism, make it explicit" fix as the text-colour issue earlier —
+   same --radius-lg value the rest of the site's framed pieces use
+   (.frame, .gallery-piece), just declared directly on the element
+   itself as well. perspective is what makes the rotateY flip below read
+   as a turn rather than a flat squash. touch-action:pan-y is what makes
+   the swipe-to-change-view gesture (see js/content.js) coexist with
+   normal page scrolling — it tells the browser "vertical panning is
+   still yours", so only a clearly horizontal drag gets claimed by the
+   swipe handler, never a scroll. */
 .garment-photo-stack {
   position: relative;
   aspect-ratio: 3 / 4;
   width: 100%;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
   perspective: 1000px;
   touch-action: pan-y;
 }
