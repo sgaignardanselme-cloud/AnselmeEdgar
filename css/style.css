@@ -532,15 +532,19 @@ body.menu-open .cart-btn {
 
 /* The menu is a drawer sliding in from the right edge, not a full-screen
    overlay — fixed width (capped, not the whole viewport), pinned to
-   top/right/bottom, transform-based slide rather than a fade. Its own
-   background is now a stack of layers instead of one flat colour — see
-   .site-menu-shader-bg/.site-menu-tint/.site-menu-content below — so
-   .site-menu itself carries no background of its own any more, just the
-   position/size/slide mechanics. overflow:hidden clips the shader canvas
-   to the panel's own box, it isn't meant to bleed past its edges.
-   visibility switches alongside the transform (delayed on close, instant
-   on open — see .is-open below) so the links are genuinely unreachable,
-   not just off-screen, while closed. */
+   top/right/bottom, transform-based slide rather than a fade.
+   background here is a solid fallback, not decorative — if the shader
+   bundle is slow, blocked, or fails outright, .site-menu-shader-bg stays
+   empty/transparent and .site-menu-tint alone (40% opacity) would leave
+   the panel showing whatever's scrolling behind it through a thin dark
+   wash instead of a reliable dark panel, which is exactly the kind of
+   gap that could read as "text just isn't white" when it's actually a
+   missing/see-through backdrop. The shader (once mounted) and tint paint
+   over this normally. overflow:hidden clips the shader canvas to the
+   panel's own box, it isn't meant to bleed past its edges. visibility
+   switches alongside the transform (delayed on close, instant on open —
+   see .is-open below) so the links are genuinely unreachable, not just
+   off-screen, while closed. */
 .site-menu {
   position: fixed;
   top: 0;
@@ -558,6 +562,7 @@ body.menu-open .cart-btn {
   height: 100dvh;
   z-index: 220;
   overflow: hidden;
+  background: rgba(7, 27, 51, 0.97);
   box-shadow: -24px 0 60px -20px rgba(0, 0, 0, 0.45);
   visibility: hidden;
   transform: translateX(100%);
@@ -2041,41 +2046,60 @@ section {
    hover-only overlay arrows (invisible by default, desktop-only in
    practice) with small always-visible buttons either side of the dots,
    so click and tap work identically rather than tap-only-if-you-know-
-   it's-there. Kept deliberately understated (thin outline, no fill) per
-   spec — this is a secondary control next to the swipe gesture, not a
-   primary action. */
+   it's-there. Sits on the page's own shader background (below the photo
+   frame, not overlapping it), so the glass fill needs to be strong
+   enough to read clearly there on its own — a thin outline wasn't
+   visible enough at a glance. */
 .carousel-controls {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  margin-top: 12px;
+  gap: 16px;
+  margin-top: 14px;
 }
 
+/* Same rounded-square language as .btn/.size-option/.quantity-btn
+   (var(--radius-sm)) rather than a plain circle, so it reads as part of
+   the same button family at a glance. Stronger glass fill + backdrop
+   blur + its own drop shadow (not just a border) is what makes it read
+   as "clickable" immediately rather than blending into the shader,
+   whether that's the bright produit.html shader behind it or, if it
+   ever sits partly over the lighter placeholder photo above it, that
+   lighter backdrop — the fill/border/shadow are opaque and defined
+   enough on their own to not depend on what's directly behind them. */
 .carousel-nav-btn {
   flex-shrink: 0;
-  width: 34px;
-  height: 34px;
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  border-radius: var(--radius-sm);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 6px 16px -6px rgba(7, 27, 51, 0.5);
   color: var(--text);
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .carousel-nav-btn:hover {
-    background: rgba(255, 255, 255, 0.14);
-    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.34);
+    border-color: rgba(255, 255, 255, 0.75);
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px -6px rgba(7, 27, 51, 0.55);
   }
 }
 
+/* Fires on tap too (not hover-only), so touch gets the same "this is
+   interactive" feedback as a mouse click. */
 .carousel-nav-btn:active {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(0.94);
+  box-shadow: 0 3px 10px -6px rgba(7, 27, 51, 0.5);
 }
 
 /* Dot indicators — count + current position, Instagram-carousel style,
@@ -2155,11 +2179,13 @@ section {
   margin: 20px 0 8px;
 }
 
+/* Stays a column at every width now, desktop included — the quantity
+   stepper sits under the size selector everywhere rather than
+   reverting to side-by-side once there's room, per feedback that the
+   side-by-side desktop layout should just match mobile instead. Only
+   the spacing grows at wider viewports, not the direction. */
 @media (min-width: 480px) {
   .selectors-row {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
     gap: 32px;
     margin-top: 28px;
   }
@@ -2788,6 +2814,38 @@ section {
 .static-shader-page .product-total strong,
 .static-shader-page .order-number strong {
   color: #fff;
+}
+
+/* Same hardcoded-white approach as the .static-shader-page block above,
+   now covering the remaining pieces of text-on-gradient that block
+   didn't reach: index.html's own sections (Accueil/Univers/Drop/
+   Contact), plus the footer and Contact form on every scrollytelling
+   page. Scoped to .scrollytelling (index/produit/panier/confirmation
+   all carry it) rather than .static-shader-page specifically, so it
+   reaches index.html too — archives.html/mentions-legales.html don't
+   have this class and keep their own plain light theme untouched.
+   Reported as still reading dark despite --text/--text-muted-strong
+   resolving correctly on paper (--text-rgb:255,255,255 on
+   body.scrollytelling, verified rule by rule, nothing overriding it) —
+   literal values here remove any dependency on that chain regardless of
+   why it wasn't reflecting in practice. */
+.scrollytelling .brand-intro-name,
+.scrollytelling .hero-title,
+.scrollytelling .section-label,
+.scrollytelling .section-title {
+  color: #fff;
+}
+
+.scrollytelling .hero-sub,
+.scrollytelling .wall-text,
+.scrollytelling .section-text,
+.scrollytelling .social-list a,
+.scrollytelling .form-field label {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.scrollytelling .site-footer {
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* ---------- Archives page ---------- */
