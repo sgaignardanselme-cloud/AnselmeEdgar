@@ -175,18 +175,35 @@
     });
   }
 
-  // Devant/Dos/Profil switcher: each view is a .garment-photo stacked in
+  // Devant/Dos/Profil carousel: each view is a .garment-photo stacked in
   // the same box (see .garment-photo-stack in style.css); switching swaps
   // which one carries .is-active/.is-leaving, and CSS transitions do the
   // rotateY + blur "turn" — this just orchestrates the class changes and
   // clears the outgoing view's classes once its own transition ends,
-  // rather than assuming a fixed duration.
+  // rather than assuming a fixed duration. Triggered by a swipe/drag on
+  // the image itself, the always-visible prev/next buttons below it (see
+  // .carousel-nav-btn in style.css — click and tap alike, no hover
+  // dependency), or the dot indicators — all funnel through the same
+  // switchTo(), so every trigger gets the identical transition and dot/
+  // aria-current update.
   function setupViewSwitcher(page) {
+    const stack = page.querySelector("[data-photo-carousel]");
     const photos = Array.from(page.querySelectorAll("[data-view-photo]"));
-    const buttons = Array.from(page.querySelectorAll("[data-view-selector] .view-option"));
-    if (!photos.length || !buttons.length) return;
+    const dots = Array.from(page.querySelectorAll("[data-carousel-dots] .carousel-dot"));
+    const prevBtn = page.querySelector("[data-carousel-prev]");
+    const nextBtn = page.querySelector("[data-carousel-next]");
+    if (!stack || !photos.length) return;
 
-    let current = photos.find((p) => p.classList.contains("is-active"))?.dataset.viewPhoto || photos[0].dataset.viewPhoto;
+    // DOM order (front, back, profile) doubles as the carousel order —
+    // neighbor() cycles through it with wraparound, so swiping past the
+    // last view loops back to the first rather than dead-ending.
+    const order = photos.map((p) => p.dataset.viewPhoto);
+    let current = photos.find((p) => p.classList.contains("is-active"))?.dataset.viewPhoto || order[0];
+
+    function neighbor(offset) {
+      const index = order.indexOf(current);
+      return order[(index + offset + order.length) % order.length];
+    }
 
     function switchTo(view) {
       if (view === current) return;
@@ -205,18 +222,65 @@
       nextPhoto.classList.remove("is-leaving");
       nextPhoto.classList.add("is-active");
 
-      buttons.forEach((btn) => {
-        const isSelected = btn.dataset.view === view;
-        btn.classList.toggle("is-selected", isSelected);
-        btn.setAttribute("aria-pressed", String(isSelected));
+      dots.forEach((dot) => {
+        const isCurrent = dot.dataset.view === view;
+        dot.classList.toggle("is-active", isCurrent);
+        dot.setAttribute("aria-current", String(isCurrent));
       });
 
       current = view;
     }
 
-    buttons.forEach((btn) => {
-      btn.addEventListener("click", () => switchTo(btn.dataset.view));
+    dots.forEach((dot) => {
+      dot.addEventListener("click", () => switchTo(dot.dataset.view));
     });
+
+    if (prevBtn) prevBtn.addEventListener("click", () => switchTo(neighbor(-1)));
+    if (nextBtn) nextBtn.addEventListener("click", () => switchTo(neighbor(1)));
+
+    // ---- Swipe: Pointer Events cover mouse-drag and touch with one
+    // implementation (same approach as the progress rail in script.js).
+    // touch-action:pan-y on the stack (see style.css) leaves native
+    // vertical page scroll alone and only claims the horizontal gesture.
+    // Only acts past a minimum distance, and only when the gesture is
+    // more horizontal than vertical — an imprecise/mostly-vertical drag
+    // (someone just scrolling the page with a thumb that happened to
+    // land on the image) doesn't misfire a view change. ----
+    const SWIPE_THRESHOLD = 40;
+    let dragging = false;
+    let startX = 0;
+    let startY = 0;
+    let lastX = 0;
+    let lastY = 0;
+
+    stack.addEventListener("pointerdown", (event) => {
+      dragging = true;
+      startX = lastX = event.clientX;
+      startY = lastY = event.clientY;
+      stack.setPointerCapture(event.pointerId);
+    });
+
+    stack.addEventListener("pointermove", (event) => {
+      if (!dragging) return;
+      lastX = event.clientX;
+      lastY = event.clientY;
+    });
+
+    function endSwipe(event) {
+      if (!dragging) return;
+      dragging = false;
+      if (stack.hasPointerCapture(event.pointerId)) {
+        stack.releasePointerCapture(event.pointerId);
+      }
+      const deltaX = lastX - startX;
+      const deltaY = lastY - startY;
+      if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY)) {
+        switchTo(neighbor(deltaX < 0 ? 1 : -1));
+      }
+    }
+
+    stack.addEventListener("pointerup", endSwipe);
+    stack.addEventListener("pointercancel", endSwipe);
   }
 
   // Everything below only runs on produit.html ([data-product-page] is

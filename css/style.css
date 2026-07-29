@@ -171,6 +171,22 @@ html.scrollytelling.static-shader-page {
   height: 100svh;
   height: 100dvh;
   z-index: -1;
+  /* The remaining top/bottom bands on mobile (status bar / Safari's
+     bottom search bar strip) aren't a positioning bug like the one this
+     file already fixed above — the wrapper itself is correctly sized and
+     placed. The ShaderGradient's own 3D camera (fixed fov/distance,
+     tuned in the shadergradient.co editor against a "normal" aspect
+     ratio) doesn't necessarily frame all the way to the plane's edges on
+     a very tall, narrow phone viewport, so right at the top/bottom strip
+     you can see past the animated gradient to the flat fallback colour
+     behind it — flat next to animated reads as a visible seam even when
+     the hex values are close. Scaling the whole wrapper up (canvas
+     included, since it's absolute+inset:0 inside this) pushes that edge
+     past the visible viewport on every side instead of tuning the fov/
+     camera-distance blind — safer than guessing at 3D parameters without
+     being able to see the result. */
+  transform: scale(1.15);
+  transform-origin: center;
 }
 
 /* Page transition: a CSS animation (not a JS-toggled class) reveals the
@@ -339,7 +355,15 @@ ul {
   pointer-events: auto;
 }
 
+/* Hidden for now, not removed — the [NOM MARQUE]/[NOM DE LA MARQUE]
+   placeholder text this holds (via data-cms="general.brand_name" in the
+   HTML) isn't a real brand name yet, so it reads as leftover placeholder
+   copy rather than a logo. The markup and CMS binding stay exactly as
+   they are on every page: reactivating is just deleting this one rule
+   once a real name or logo mark is ready to go here (see .nav-actions
+   below for why the icons don't need any change either way). */
 .floating-logo {
+  display: none;
   font-family: var(--font-display);
   font-size: 1.1rem;
   letter-spacing: 0.05em;
@@ -350,11 +374,15 @@ ul {
 
 /* Groups the cart icon and the hamburger together as the nav's right-hand
    side, so `.floating-nav`'s space-between still just splits into two
-   halves (logo / actions) instead of drifting the cart into the middle. */
+   halves (logo / actions) instead of drifting the cart into the middle.
+   margin-left:auto keeps this pinned to the right on its own regardless
+   — with .floating-logo hidden above, space-between has only one child
+   left to position, which would otherwise snap it to the left edge. */
 .nav-actions {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-left: auto;
 }
 
 /* Permanently visible cart entry point (not a real link/drawer yet).
@@ -372,6 +400,20 @@ ul {
   border: none;
   color: var(--text);
   cursor: pointer;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s ease, visibility 0s linear;
+}
+
+/* Hidden alongside the hamburger (see .hamburger-btn.is-open) while the
+   drawer is open — script.js toggles this on <body> from openMenu()/
+   closeMenu(). Same delayed-on-hide/instant-on-show pattern as the rest
+   of the menu's own show/hide transitions, and same reasoning as hiding
+   the hamburger: the panel is the focus now, not the header icons. */
+body.menu-open .cart-btn {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0s linear 0.2s;
 }
 
 /* A more noticeable confirmation than the toast alone on its own — see
@@ -430,9 +472,13 @@ ul {
   display: none;
 }
 
-/* The hamburger doubles as the close control: its three bars morph into
-   an X (via .is-open) instead of a separate close button. 44x44 touch
-   target, same reasoning as .cart-btn above. */
+/* Opens the menu (3 bars); once it's open, the panel has its own close
+   button (.site-menu-close, top-left of the panel — see further down)
+   so this one fades out instead of morphing into a second X sitting
+   right next to/overlapping it. 44x44 touch target, same reasoning as
+   .cart-btn above. visibility (not just opacity) keeps it out of the
+   tab order while hidden, same delayed-on-hide/instant-on-show pattern
+   used for the menu/backdrop themselves. */
 .hamburger-btn {
   display: flex;
   flex-direction: column;
@@ -443,6 +489,9 @@ ul {
   background: none;
   border: none;
   cursor: pointer;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s ease, visibility 0s linear;
 }
 
 .hamburger-btn span {
@@ -450,83 +499,202 @@ ul {
   height: 2px;
   width: 100%;
   background: var(--text);
-  transition: transform 0.25s ease, opacity 0.25s ease, background 0.2s ease;
 }
 
-.hamburger-btn.is-open span {
-  background: #fff;
-}
-
-.hamburger-btn.is-open span:nth-child(1) {
-  transform: translateY(8px) rotate(45deg);
-}
-
-.hamburger-btn.is-open span:nth-child(2) {
+.hamburger-btn.is-open {
   opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0s linear 0.2s;
 }
 
-.hamburger-btn.is-open span:nth-child(3) {
-  transform: translateY(-8px) rotate(-45deg);
-}
-
-/* The menu is a dark, (near-)opaque overlay — position:fixed, so it sits
-   on top of the page and never pushes content down — with visibility
-   toggled alongside the transform so the links are genuinely
-   unreachable (not just off-screen) while closed. Dark rather than the
-   light paper surface: it echoes the gradient's own darkest stop, so
-   the panel reads as part of the same palette instead of an unrelated
-   light card. */
-.site-menu {
+/* Dimmed scrim behind the sliding panel — the panel itself no longer
+   covers the full screen (see .site-menu below), so this is what dims
+   the rest of the page and gives the drawer something to visually sit
+   in front of. Click-to-close, same as before. */
+.site-menu-backdrop {
   position: fixed;
   inset: 0;
-  /* Same reasoning as .site-shader-bg above — a full-bleed fixed overlay
-     needs an explicit height, not just inset:0's implicit bottom:0. */
+  height: 100vh;
+  height: 100svh;
+  height: 100dvh;
+  z-index: 210;
+  background: rgba(7, 27, 51, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+}
+
+.site-menu-backdrop.is-open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease;
+}
+
+/* The menu is a drawer sliding in from the right edge, not a full-screen
+   overlay — fixed width (capped, not the whole viewport), pinned to
+   top/right/bottom, transform-based slide rather than a fade. Its own
+   background is now a stack of layers instead of one flat colour — see
+   .site-menu-shader-bg/.site-menu-tint/.site-menu-content below — so
+   .site-menu itself carries no background of its own any more, just the
+   position/size/slide mechanics. overflow:hidden clips the shader canvas
+   to the panel's own box, it isn't meant to bleed past its edges.
+   visibility switches alongside the transform (delayed on close, instant
+   on open — see .is-open below) so the links are genuinely unreachable,
+   not just off-screen, while closed. */
+.site-menu {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  /* 72% of the viewport on mobile — enough to leave a visible strip of
+     the page behind it, per feedback that 85% read as covering nearly
+     everything. max-width takes over once 72vw would exceed it (~528px
+     viewport and up), landing on a fixed 380px panel for tablet/desktop
+     without a separate breakpoint. */
+  width: 72vw;
+  max-width: 380px;
   height: 100vh;
   height: 100svh;
   height: 100dvh;
   z-index: 220;
-  background: rgba(7, 27, 51, 0.97);
+  overflow: hidden;
+  box-shadow: -24px 0 60px -20px rgba(0, 0, 0, 0.45);
   visibility: hidden;
-  opacity: 0;
-  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 32px;
-  /* Keeps the nav links/socials clear of a notch/dynamic island (top) or
-     the home indicator (bottom) — needs viewport-fit=cover in the
-     <meta name="viewport"> tag, or these env() values are just 0. */
-  padding-top: calc(32px + env(safe-area-inset-top));
-  padding-bottom: calc(32px + env(safe-area-inset-bottom));
-  padding-left: calc(32px + env(safe-area-inset-left));
-  padding-right: calc(32px + env(safe-area-inset-right));
+  transform: translateX(100%);
+  transition: transform 0.35s ease-out, visibility 0s linear 0.35s;
 }
 
 .site-menu.is-open {
   visibility: visible;
-  opacity: 1;
-  transition: opacity 0.3s ease;
+  transform: translateX(0);
+  transition: transform 0.35s ease-out;
 }
 
-.site-menu-nav {
+/* Bottom layer: the static "menu" ShaderGradient variant (see
+   src/shader-bg/ShaderBackground.jsx and main.jsx, which now mounts a
+   canvas onto every [data-shader-mount] element instead of just one) —
+   its own independent instance, not a reuse of the page's main
+   background, since it needs its own palette/position regardless of
+   which shader variant (or none, on archives.html/mentions-legales.html)
+   sits behind the rest of the page. */
+.site-menu-shader-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+/* Middle layer: darkens the shader enough for the white text above it to
+   stay readable without hiding the shader outright — "visible behind the
+   panel, but text still has good contrast" is exactly what a dark
+   translucent (not opaque) tint over an otherwise-full-strength shader
+   gets you, rather than picking one or the other. Also the only
+   background layer on archives.html/mentions-legales.html, which don't
+   load the shader bundle at all (see the HTML comment there) — still
+   gives those two pages the same dark fill the panel always had. */
+.site-menu-tint {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  /* Lightened from an earlier 0.55: the CTA button's backdrop-filter
+     (same liquid-glass SVG distortion as .btn everywhere else on the
+     site — nothing about the button itself is different here) samples
+     whatever is actually painted behind it, which is this tint sitting
+     on top of the shader. At 0.55 it was dimming/flattening the shader
+     enough that the same distortion effect had far less colour/detail
+     to work with than it gets on, say, the hero's undimmed gradient —
+     reading as a flatter, more basic button even though the CSS chain
+     is identical. 0.4 still keeps full-opacity white text comfortably
+     readable while giving the effect noticeably more to distort. */
+  background: rgba(7, 27, 51, 0.4);
+}
+
+/* Top layer: the actual content, needs its own stacking position to
+   guarantee it paints above the two background layers regardless of
+   DOM/paint-order specifics — same padding/flex layout the old flat-
+   background .site-menu used to carry directly. */
+.site-menu-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
   display: flex;
   flex-direction: column;
+  padding: 24px;
+  /* Keeps the close button/nav/footer clear of a notch/dynamic island
+     (top), the home indicator (bottom) and, since this panel now sits
+     flush against the right edge, a landscape notch there too — needs
+     viewport-fit=cover in the <meta name="viewport"> tag, or these
+     env() values are just 0. */
+  padding-top: calc(24px + env(safe-area-inset-top));
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  padding-right: calc(24px + env(safe-area-inset-right));
+}
+
+/* Close button sits at the start (left) of the panel's own header row,
+   not pinned to the panel's right/top corner — that spot is already
+   occupied by the fixed hamburger-turned-cross in .floating-nav
+   (z-index 250, still above this panel), which keeps working as the
+   other way to close it. Two close controls stacked on the same corner
+   would just look like a rendering bug, not a feature. */
+.site-menu-header {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 32px;
+}
+
+.site-menu-close {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .site-menu-close:hover {
+    background: rgba(255, 255, 255, 0.16);
+  }
+}
+
+/* Nav links vertically centred in whatever space is left between the
+   header and footer, rather than pinned to the top — reads better in a
+   narrow tall panel than a block of links stranded right under the
+   close button. */
+.site-menu-nav {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
 }
 
 .site-menu-nav ul {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 28px;
 }
 
+/* Sized for the panel's own fixed/capped width (max 380px minus padding)
+   now, not clamp()'d against the full viewport like the old full-screen
+   version needed — a plain fixed size is enough since the available
+   width barely changes across devices any more. Solid white always (not
+   muted at rest) per spec — every text element in this panel is white —
+   which means the underline below is now the only way .is-active reads
+   as "current page" (it used to also get a permanently brighter white
+   than the other, muted links; with everything the same white now,
+   that signal would otherwise disappear entirely). */
 .site-menu-nav a {
   font-family: var(--font-display);
-  font-size: clamp(1.8rem, 6vw, 2.6rem);
+  font-size: 1.4rem;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.75);
+  color: #fff;
   display: inline-block;
   position: relative;
-  transition: color 0.25s ease;
 }
 
 .site-menu-nav a::after {
@@ -542,33 +710,87 @@ ul {
   transition: transform 0.25s ease;
 }
 
-.site-menu-nav a:hover,
-.site-menu-nav a:focus-visible {
-  color: #fff;
-}
-
 .site-menu-nav a:hover::after,
-.site-menu-nav a:focus-visible::after {
+.site-menu-nav a:focus-visible::after,
+.site-menu-nav a.is-active::after {
   transform: scaleX(1);
 }
 
-.site-menu-nav a.is-active {
+/* Socials + waitlist CTA, anchored to the bottom of the panel. Socials
+   text stays fully opaque white too, distinguished from the nav links
+   above only by its smaller size/letter-spacing rather than a dimmer
+   colour. */
+.site-menu-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.site-menu-footer .socials {
+  display: flex;
+  gap: 20px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: #fff;
 }
 
-.site-menu-nav .socials {
-  margin-top: 40px;
-  display: flex;
-  gap: 24px;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.55);
+.site-menu-footer .socials a {
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
 }
 
+.site-menu-footer .socials a:hover {
+  opacity: 1;
+}
+
+/* .btn normally goes solid-white-fill + dark ink on .static-shader-page
+   (produit/panier/confirmation — see the contrast-fix section further
+   down) because it's tuned for the bright "static" shader directly
+   behind it there. This panel is always the same near-black fill
+   regardless of which page/shader is behind it, so the CTA here should
+   stay the original translucent glass + white text on every page,
+   .static-shader-page included — the override above would otherwise
+   make it solid white against a page whose shader isn't even visible
+   behind the panel. */
+.static-shader-page .site-menu .btn {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--text);
+}
+
+/* ...and its :hover/:active need the same exception, at higher
+   specificity than .static-shader-page .btn:hover/:active further down
+   (which would otherwise win on hover/press specifically, since a bare
+   .btn:hover there matches this button too) — without this the CTA
+   would sit translucent at rest and jump to solid white the instant you
+   hover or press it. */
+@media (hover: hover) and (pointer: fine) {
+  .static-shader-page .site-menu .btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.45);
+  }
+}
+
+.static-shader-page .site-menu .btn:active {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+/* The blanket reduced-motion rule further down (`* { transition-duration:
+   0.01ms !important }`) already collapses the transitions themselves —
+   what it can't reach is transition-delay, a separate property. Without
+   this, the panel/backdrop would still take a full 0.3-0.35s to actually
+   become invisible/unfocusable after closing (just with an instantaneous
+   rather than animated visual change during that wait), since the delay
+   is what the visibility toggle depends on to happen. */
 @media (prefers-reduced-motion: reduce) {
-  .site-menu {
+  .site-menu-backdrop {
     transition: opacity 0.01ms ease, visibility 0s linear;
+  }
+
+  .site-menu {
+    transition: transform 0.01ms ease, visibility 0s linear;
   }
 }
 
@@ -1428,11 +1650,14 @@ section {
   border: 1px solid rgba(27, 42, 74, 0.08);
   border-radius: var(--radius-md);
   /* Tighter default (phones); the 760px override below already restores
-     the roomier desktop values (36px/40px) for the row layout. */
-  padding: 18px 14px;
+     the roomier desktop values (36px/40px) for the row layout. Cut down
+     further below — see the max-width cap on .frame right after — since
+     the padding alone wasn't the issue, the near-full-width tall image
+     was. */
+  padding: 14px 12px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
@@ -1452,11 +1677,24 @@ section {
    for mobile. Capping the width (same "constrain, don't change the
    ratio/crop" approach used for the compact masterpiece frame further
    down and the hero/drop visuals elsewhere) shrinks both dimensions
-   together and keeps it centred instead of stretched edge-to-edge. */
+   together and keeps it centred instead of stretched edge-to-edge.
+   90px — roughly half the previous 180px cap, still too roomy per
+   feedback — reads as a small framed thumbnail rather than a poster,
+   which is the point until there's a real image in it. */
 @media (max-width: 759px) {
   .gallery-piece .frame {
-    max-width: 240px;
+    max-width: 90px;
     margin: 0 auto;
+  }
+
+  /* .placeholder-visual's normal 0.9rem/20px padding was sized for a
+     much bigger box — at 90px wide it would just clip the placeholder
+     copy mid-word (.frame has overflow:hidden). Scaled down to roughly
+     the same treatment .gallery-piece--compact already uses for its own
+     160px masterpiece frame, one step smaller again for this box. */
+  .gallery-piece .frame .placeholder-visual {
+    font-size: 0.45rem;
+    padding: 6px;
   }
 }
 
@@ -1546,22 +1784,6 @@ section {
   color: var(--ink-muted-strong);
   font-style: italic;
   max-width: 360px;
-}
-
-.cartel-link {
-  margin-top: 4px;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--ink);
-  border-bottom: 1px solid rgba(27, 42, 74, 0.3);
-  align-self: flex-start;
-  padding-bottom: 2px;
-  transition: border-color 0.25s ease;
-}
-
-.cartel-link:hover {
-  border-color: var(--ink);
 }
 
 .gallery-link-out {
@@ -1770,12 +1992,17 @@ section {
 
 /* Reuses .frame (bordered, rounded, lit rectangle) — same "framed piece"
    treatment as the gallery/exhibition pieces. perspective is what makes
-   the rotateY flip below read as a turn rather than a flat squash. */
+   the rotateY flip below read as a turn rather than a flat squash.
+   touch-action:pan-y is what makes the swipe-to-change-view gesture (see
+   js/content.js) coexist with normal page scrolling — it tells the
+   browser "vertical panning is still yours", so only a clearly
+   horizontal drag gets claimed by the swipe handler, never a scroll. */
 .garment-photo-stack {
   position: relative;
   aspect-ratio: 3 / 4;
   width: 100%;
   perspective: 1000px;
+  touch-action: pan-y;
 }
 
 /* Three views stacked in the same box; only .is-active is actually
@@ -1810,48 +2037,87 @@ section {
   opacity: 0;
 }
 
-.view-selector {
+/* Prev/next/dots control row below the image — replaces the old
+   hover-only overlay arrows (invisible by default, desktop-only in
+   practice) with small always-visible buttons either side of the dots,
+   so click and tap work identically rather than tap-only-if-you-know-
+   it's-there. Kept deliberately understated (thin outline, no fill) per
+   spec — this is a secondary control next to the swipe gesture, not a
+   primary action. */
+.carousel-controls {
   display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 10px;
-  margin-top: 16px;
+  gap: 14px;
+  margin-top: 12px;
 }
 
-/* Same glass tokens/states as .size-option — see the .static-shader-page
-   override further down for why produit.html needs a solid-fill variant
-   instead. Same mobile-tightened padding/font as .size-option too,
-   min-height held at the 44px floor regardless of width. */
-.view-option {
-  min-height: 44px;
-  padding: 8px 12px;
-  font-family: var(--font-display);
-  text-transform: uppercase;
-  font-size: 0.7rem;
-  letter-spacing: 0.05em;
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+.carousel-nav-btn {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
   color: var(--text);
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease;
 }
 
-@media (min-width: 768px) {
-  .view-option {
-    padding: 10px 16px;
-    font-size: 0.75rem;
+@media (hover: hover) and (pointer: fine) {
+  .carousel-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.4);
   }
 }
 
-.view-option:hover {
-  background: rgba(255, 255, 255, 0.16);
+.carousel-nav-btn:active {
+  background: rgba(255, 255, 255, 0.18);
 }
 
-.view-option.is-selected {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+/* Dot indicators — count + current position, Instagram-carousel style,
+   replacing the old text-label view-selector. Each dot button is a
+   generous 32px tap target; only the small inner circle (::before) is
+   actually visible, sized/coloured independently. No margin-top of its
+   own any more — .carousel-controls above already spaces the whole row
+   from the image. */
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.carousel-dot {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.carousel-dot::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.carousel-dot:hover::before {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.carousel-dot.is-active::before {
+  background: #fff;
+  transform: scale(1.4);
 }
 
 .product-info {
@@ -1912,9 +2178,9 @@ section {
   gap: 10px;
 }
 
-/* Plain underlined text trigger (same weight as .cartel-link elsewhere),
-   not another glass button — it's a secondary action next to the real
-   size buttons, doesn't need their visual weight. */
+/* Plain underlined text trigger, not another glass button — it's a
+   secondary action next to the real size buttons, doesn't need their
+   visual weight. */
 .size-guide-link {
   background: none;
   border: none;
@@ -1923,13 +2189,8 @@ section {
   font-size: 0.75rem;
   text-decoration: underline;
   text-underline-offset: 2px;
-  color: var(--text-muted-strong);
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.size-guide-link:hover {
   color: var(--text);
+  cursor: pointer;
 }
 
 /* Same glass tokens as .size-option/.btn again — the "-"/"+" stepper
@@ -2415,8 +2676,7 @@ section {
    transparent glass tweak wouldn't guarantee. Scoped to this body class
    only — index.html/archives.html keep their existing look. */
 .static-shader-page .btn,
-.static-shader-page .size-option,
-.static-shader-page .view-option {
+.static-shader-page .size-option {
   background: rgba(255, 255, 255, 0.92);
   border-color: rgba(255, 255, 255, 0.95);
   color: var(--ink);
@@ -2426,8 +2686,7 @@ section {
     inset 0 -1px 2px rgba(7, 27, 51, 0.08);
 }
 
-.static-shader-page .size-option:hover,
-.static-shader-page .view-option:hover {
+.static-shader-page .size-option:hover {
   background: #fff;
   border-color: #fff;
 }
@@ -2454,8 +2713,7 @@ section {
     inset 0 -1px 1px rgba(255, 255, 255, 0.6);
 }
 
-.static-shader-page .size-option.is-selected,
-.static-shader-page .view-option.is-selected {
+.static-shader-page .size-option.is-selected {
   background: var(--ink);
   border-color: var(--ink);
   color: #fff;
@@ -2493,6 +2751,44 @@ section {
    .menu-open override that used to restore --text once the menu closed:
    with no ink state left to restore from, it would've been a no-op
    duplicate of the (now unconditional) default. */
+
+/* Explicit white-text reinforcement for produit.html/panier.html/
+   confirmation.html body copy — title, description, price, order
+   number, related-pieces labels. These already resolve to white through
+   body.scrollytelling's --text-rgb:255,255,255 (see :root/body rules
+   near the top of this file) with no .static-shader-page override
+   anywhere touching them — verified rule by rule — but hardcoded here
+   with literal white values instead of the --text/--text-muted-strong
+   custom properties, scoped tightly to .static-shader-page, so there is
+   no possible dependency left on that inheritance/custom-property chain
+   for exactly the elements reported as still reading dark. Deliberately
+   excludes anything with its own light/white fill (.btn, .size-option,
+   the quantity stepper, .cart-item/.order-item cards, the size-guide
+   modal) — those correctly keep dark ink text on their own light
+   background and must not be touched. */
+.static-shader-page .section-label,
+.static-shader-page .section-title,
+.static-shader-page .product-price,
+.static-shader-page .cart-grand-total,
+.static-shader-page .footer-brand-name,
+.static-shader-page .size-guide-link {
+  color: #fff;
+}
+
+.static-shader-page .section-text,
+.static-shader-page .product-total,
+.static-shader-page .order-number,
+.static-shader-page .cart-empty p,
+.static-shader-page .form-note,
+.static-shader-page .gallery-item-label,
+.static-shader-page .footer-nav a {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.static-shader-page .product-total strong,
+.static-shader-page .order-number strong {
+  color: #fff;
+}
 
 /* ---------- Archives page ---------- */
 

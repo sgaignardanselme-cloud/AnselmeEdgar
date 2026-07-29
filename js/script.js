@@ -57,25 +57,44 @@
 document.addEventListener("DOMContentLoaded", () => {
   const toggle = document.querySelector(".hamburger-btn");
   const menu = document.querySelector(".site-menu");
+  const backdrop = document.querySelector("[data-menu-backdrop]");
+  const closeBtn = document.querySelector("[data-menu-close]");
 
   if (!toggle || !menu) return;
 
   function closeMenu() {
     menu.classList.remove("is-open");
+    if (backdrop) backdrop.classList.remove("is-open");
     toggle.classList.remove("is-open");
     toggle.setAttribute("aria-expanded", "false");
     document.body.classList.remove("menu-open");
   }
 
+  function openMenu() {
+    menu.classList.add("is-open");
+    if (backdrop) backdrop.classList.add("is-open");
+    toggle.classList.add("is-open");
+    toggle.setAttribute("aria-expanded", "true");
+    // Hides the cart icon (see body.menu-open in style.css) — it's the
+    // one other .floating-nav control the hamburger's own .is-open fade
+    // doesn't already cover, since it isn't the hamburger itself.
+    document.body.classList.add("menu-open");
+  }
+
+  // Only the hamburger opens (single entry point); several things can
+  // close it now that it's a drawer instead of a full-screen overlay —
+  // its own close button, tapping the dimmed backdrop, picking a nav
+  // link, Escape, or the hamburger itself again.
   toggle.addEventListener("click", () => {
-    const isOpen = menu.classList.toggle("is-open");
-    toggle.classList.toggle("is-open", isOpen);
-    toggle.setAttribute("aria-expanded", String(isOpen));
-    // Lets .static-shader-page's dark-ink header icons (tuned to contrast
-    // against the blue shader) switch back to their normal light --text
-    // while the menu's own dark overlay is what's actually behind them.
-    document.body.classList.toggle("menu-open", isOpen);
+    if (menu.classList.contains("is-open")) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
   });
+
+  if (closeBtn) closeBtn.addEventListener("click", closeMenu);
+  if (backdrop) backdrop.addEventListener("click", closeMenu);
 
   menu.querySelectorAll("a").forEach((link) => {
     link.addEventListener("click", closeMenu);

@@ -48,21 +48,36 @@
     </div>
   </div>
 
+  <div class="site-menu-backdrop" data-menu-backdrop></div>
   <div class="site-menu" id="site-menu">
-    <nav class="site-menu-nav">
-      <ul>
-        <li><a href="index.html">Accueil</a></li>
-        <li><a href="index.html#univers">Univers</a></li>
-        <li><a href="index.html#drop">Drop</a></li>
-        <!-- Archives retiré du menu : pas encore de drop passé à archiver
-             (voir archives.html — code gardé intact). -->
-        <li><a href="index.html#contact">Contact</a></li>
-      </ul>
-      <div class="socials">
-        <a href="#" target="_blank" rel="noopener" data-cms-href="general.instagram_url">Instagram</a>
-        <a href="#" target="_blank" rel="noopener" data-cms-href="general.tiktok_url">TikTok</a>
+    <!-- No ShaderGradient here — same reasoning as archives.html. -->
+    <div class="site-menu-tint" aria-hidden="true"></div>
+    <div class="site-menu-content">
+      <div class="site-menu-header">
+        <button type="button" class="site-menu-close" data-menu-close aria-label="Fermer le menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
       </div>
-    </nav>
+      <nav class="site-menu-nav">
+        <ul>
+          <li><a href="index.html">Accueil</a></li>
+          <li><a href="index.html#univers">Univers</a></li>
+          <li><a href="index.html#drop">Drop</a></li>
+          <!-- Archives retiré du menu : pas encore de drop passé à archiver
+               (voir archives.html — code gardé intact). -->
+          <li><a href="index.html#contact">Contact</a></li>
+        </ul>
+      </nav>
+      <div class="site-menu-footer">
+        <div class="socials">
+          <a href="#" target="_blank" rel="noopener" data-cms-href="general.instagram_url">Instagram</a>
+          <a href="#" target="_blank" rel="noopener" data-cms-href="general.tiktok_url">TikTok</a>
+        </div>
+        <a href="index.html#contact" class="btn" data-cms="hero.cta_secondary_label">Rejoindre la liste d'attente</a>
+      </div>
+    </div>
   </div>
 
   <main>

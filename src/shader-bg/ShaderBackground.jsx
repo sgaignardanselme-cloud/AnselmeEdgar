@@ -50,6 +50,20 @@ const VARIANTS = {
     pixelDensity: 1,
     frameRate: 10,
   },
+  // Site-menu drawer background — exact settings supplied for this
+  // specific panel (different palette from the other three variants).
+  // Static by design, not just by prefers-reduced-motion fallback.
+  menu: {
+    animate: 'off',
+    color1: '#2d26ff',
+    color2: '#35c2db',
+    color3: '#20cae1',
+    type: 'plane',
+    uStrength: 4,
+    uFrequency: 5.5,
+    pixelDensity: 1,
+    frameRate: 10,
+  },
 };
 
 export default function ShaderBackground({ variant = 'animated' }) {

@@ -72,7 +72,7 @@
     </defs>
   </svg>
 
-  <div id="shader-bg" class="site-shader-bg" aria-hidden="true"></div>
+  <div id="shader-bg" class="site-shader-bg" data-shader-mount aria-hidden="true"></div>
 
   <div class="floating-nav">
     <a href="#accueil" class="floating-logo" data-cms="general.brand_name">[NOM MARQUE]</a>
@@ -90,25 +90,40 @@
     </div>
   </div>
 
+  <div class="site-menu-backdrop" data-menu-backdrop></div>
   <div class="site-menu" id="site-menu">
-    <nav class="site-menu-nav">
-      <ul>
-        <li><a href="#accueil" class="is-active">Accueil</a></li>
-        <li><a href="#univers">Univers</a></li>
-        <li><a href="#drop">Drop</a></li>
-        <!-- Archives retiré du menu : pas encore de drop passé à archiver
-             (voir archives.html — code gardé intact). À réactiver ici et
-             sur produit.html/panier.html une fois un premier drop
-             archivé :
-        <li><a href="archives.html">Archives</a></li>
-        -->
-        <li><a href="#contact">Contact</a></li>
-      </ul>
-      <div class="socials">
-        <a href="#" target="_blank" rel="noopener" data-cms-href="general.instagram_url">Instagram</a>
-        <a href="#" target="_blank" rel="noopener" data-cms-href="general.tiktok_url">TikTok</a>
+    <div class="site-menu-shader-bg" data-shader-mount data-shader-variant="menu" aria-hidden="true"></div>
+    <div class="site-menu-tint" aria-hidden="true"></div>
+    <div class="site-menu-content">
+      <div class="site-menu-header">
+        <button type="button" class="site-menu-close" data-menu-close aria-label="Fermer le menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
       </div>
-    </nav>
+      <nav class="site-menu-nav">
+        <ul>
+          <li><a href="#accueil" class="is-active">Accueil</a></li>
+          <li><a href="#univers">Univers</a></li>
+          <li><a href="#drop">Drop</a></li>
+          <!-- Archives retiré du menu : pas encore de drop passé à archiver
+               (voir archives.html — code gardé intact). À réactiver ici et
+               sur produit.html/panier.html une fois un premier drop
+               archivé :
+          <li><a href="archives.html">Archives</a></li>
+          -->
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+      <div class="site-menu-footer">
+        <div class="socials">
+          <a href="#" target="_blank" rel="noopener" data-cms-href="general.instagram_url">Instagram</a>
+          <a href="#" target="_blank" rel="noopener" data-cms-href="general.tiktok_url">TikTok</a>
+        </div>
+        <a href="#contact" class="btn" data-cms="hero.cta_secondary_label">Rejoindre la liste d'attente</a>
+      </div>
+    </div>
   </div>
 
   <!-- Navigation à points : reflète et pilote la section courante pendant le scroll -->
@@ -196,7 +211,6 @@
                 [PLACEHOLDER — une phrase courte, façon note de commissaire,
                 pas un paragraphe explicatif.]
               </p>
-              <a href="#drop" class="cartel-link">Visiter la pièce</a>
             </div>
           </div>
 

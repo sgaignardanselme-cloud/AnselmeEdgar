@@ -1,11 +1,21 @@
 import { createRoot } from 'react-dom/client';
 import ShaderBackground from './ShaderBackground.jsx';
 
-const mountPoint = document.getElementById('shader-bg');
-if (mountPoint) {
+// Every page mounts the main page-background canvas (#shader-bg); some
+// also mount a second, independent one for the site-menu drawer's own
+// background (see .site-menu-shader-bg in index.html etc.) — both share
+// this same [data-shader-mount] marker and are handled identically here,
+// each getting its own React root/Canvas rather than trying to reuse one
+// across two differently-sized, differently-positioned targets.
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isSmallViewport = window.matchMedia('(max-width: 640px)').matches;
+
+document.querySelectorAll('[data-shader-mount]').forEach((mountPoint) => {
   const requestedVariant = mountPoint.dataset.shaderVariant || 'animated';
-  // produit.html/panier.html already request "static" outright, untouched
-  // by any of this. For index.html's "animated" request specifically:
+  // produit.html/panier.html's main background and the menu drawer's own
+  // background already request "static"/"menu" outright, untouched by
+  // any of this. For an "animated" request specifically (index.html's
+  // main background):
   // - prefers-reduced-motion always wins outright (an explicit user
   //   preference, not a guess) — falls back to the still frame.
   // - on phones, we're testing whether the real ShaderGradient can just
@@ -13,9 +23,6 @@ if (mountPoint) {
   //   the actually-expensive knobs turned down (pixelDensity, frameRate,
   //   geometry complexity — see ShaderBackground.jsx), rather than
   //   disabling animation outright as a precaution.
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const isSmallViewport = window.matchMedia('(max-width: 640px)').matches;
-
   let variant = requestedVariant;
   if (requestedVariant === 'animated' && prefersReducedMotion) {
     variant = 'static';
@@ -24,4 +31,4 @@ if (mountPoint) {
   }
 
   createRoot(mountPoint).render(<ShaderBackground variant={variant} />);
-}
+});
