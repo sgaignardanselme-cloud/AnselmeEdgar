@@ -151,9 +151,11 @@
                Events handling) — touch-action:pan-y lets normal page
                scroll pass through untouched. -->
           <div class="garment-photo-stack frame grain" data-photo-carousel>
-            <div class="garment-photo placeholder-visual is-active" data-view-photo="front">[PLACEHOLDER — VUE DEVANT]</div>
-            <div class="garment-photo placeholder-visual" data-view-photo="back">[PLACEHOLDER — VUE DOS]</div>
-            <div class="garment-photo placeholder-visual" data-view-photo="profile">[PLACEHOLDER — VUE PROFIL]</div>
+            <div class="garment-photo-viewport">
+              <div class="garment-photo placeholder-visual is-active" data-view-photo="front">[PLACEHOLDER — VUE DEVANT]</div>
+              <div class="garment-photo placeholder-visual" data-view-photo="back">[PLACEHOLDER — VUE DOS]</div>
+              <div class="garment-photo placeholder-visual" data-view-photo="profile">[PLACEHOLDER — VUE PROFIL]</div>
+            </div>
           </div>
 
           <!-- Prev/next arrows flank the dot indicators below the image —

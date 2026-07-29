@@ -1868,26 +1868,39 @@ section {
    treatment as the gallery/exhibition pieces — for the border/shadow,
    but border-radius/overflow are repeated directly here too rather than
    left to only come from that shared class: reported as rendering with
-   sharp corners on mobile despite .frame's own border-radius:
-   var(--radius-lg) checking out correct in the source with nothing
-   overriding it, so this is the same "stop depending on the indirect
-   mechanism, make it explicit" fix as the text-colour issue earlier —
-   same --radius-lg value the rest of the site's framed pieces use
-   (.frame, .gallery-piece), just declared directly on the element
-   itself as well. perspective is what makes the rotateY flip below read
-   as a turn rather than a flat squash. touch-action:pan-y is what makes
-   the swipe-to-change-view gesture (see js/content.js) coexist with
-   normal page scrolling — it tells the browser "vertical panning is
-   still yours", so only a clearly horizontal drag gets claimed by the
-   swipe handler, never a scroll. */
+   sharp corners on mobile Safari specifically (never on desktop Chrome/
+   Firefox) despite .frame's own border-radius: var(--radius-lg) checking
+   out correct in the source with nothing overriding it. Root cause: this
+   element used to also carry perspective (for the rotateY flip below) —
+   WebKit has a known bug where overflow:hidden + border-radius fails to
+   clip correctly on an element that *also* establishes a 3D perspective
+   context, once it gets promoted to its own compositing layer. Fixed by
+   moving perspective to .garment-photo-viewport (a plain inner wrapper,
+   see below) instead, so the rounding/clipping element and the
+   3D-context element are no longer the same node. touch-action:pan-y is
+   what makes the swipe-to-change-view gesture (see js/content.js)
+   coexist with normal page scrolling — it tells the browser "vertical
+   panning is still yours", so only a clearly horizontal drag gets
+   claimed by the swipe handler, never a scroll. */
 .garment-photo-stack {
   position: relative;
   aspect-ratio: 3 / 4;
   width: 100%;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  perspective: 1000px;
   touch-action: pan-y;
+}
+
+/* Inner wrapper, fills .garment-photo-stack exactly — the only job here
+   is establishing the 3D viewing context (perspective) for .garment-photo's
+   rotateY flip, deliberately kept off the outer, rounded/clipped element
+   above (see the comment there). No border-radius/overflow of its own to
+   worry about; .garment-photo-stack already clips anything that would
+   otherwise spill past its edges. */
+.garment-photo-viewport {
+  position: absolute;
+  inset: 0;
+  perspective: 1000px;
 }
 
 /* Three views stacked in the same box; only .is-active is actually
