@@ -9,12 +9,25 @@
     "image_front": "",
     "image_back": "",
     "image_side": "",
+    "image_worn": "",
     "gallery": [],
     "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL"
+      {
+        "size": "S",
+        "stock": 10
+      },
+      {
+        "size": "M",
+        "stock": 10
+      },
+      {
+        "size": "L",
+        "stock": 10
+      },
+      {
+        "size": "XL",
+        "stock": 10
+      }
     ],
     "order": 1
   },
@@ -28,12 +41,25 @@
     "image_front": "/images/uploads/IMG_3930.jpg",
     "image_back": "",
     "image_side": "",
+    "image_worn": "",
     "gallery": [],
     "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL"
+      {
+        "size": "S",
+        "stock": 10
+      },
+      {
+        "size": "M",
+        "stock": 10
+      },
+      {
+        "size": "L",
+        "stock": 10
+      },
+      {
+        "size": "XL",
+        "stock": 10
+      }
     ],
     "order": 1
   },
@@ -47,12 +73,25 @@
     "image_front": "/images/uploads/IMG_3932.jpg",
     "image_back": "",
     "image_side": "",
+    "image_worn": "",
     "gallery": [],
     "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL"
+      {
+        "size": "S",
+        "stock": 10
+      },
+      {
+        "size": "M",
+        "stock": 10
+      },
+      {
+        "size": "L",
+        "stock": 10
+      },
+      {
+        "size": "XL",
+        "stock": 10
+      }
     ],
     "order": 1
   },
@@ -66,12 +105,25 @@
     "image_front": "",
     "image_back": "",
     "image_side": "",
+    "image_worn": "",
     "gallery": [],
     "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL"
+      {
+        "size": "S",
+        "stock": 10
+      },
+      {
+        "size": "M",
+        "stock": 10
+      },
+      {
+        "size": "L",
+        "stock": 10
+      },
+      {
+        "size": "XL",
+        "stock": 10
+      }
     ],
     "order": 2
   },
@@ -85,12 +137,25 @@
     "image_front": "",
     "image_back": "",
     "image_side": "",
+    "image_worn": "",
     "gallery": [],
     "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL"
+      {
+        "size": "S",
+        "stock": 10
+      },
+      {
+        "size": "M",
+        "stock": 10
+      },
+      {
+        "size": "L",
+        "stock": 10
+      },
+      {
+        "size": "XL",
+        "stock": 10
+      }
     ],
     "order": 3
   },
@@ -104,12 +169,25 @@
     "image_front": "",
     "image_back": "",
     "image_side": "",
+    "image_worn": "",
     "gallery": [],
     "sizes": [
-      "S",
-      "M",
-      "L",
-      "XL"
+      {
+        "size": "S",
+        "stock": 10
+      },
+      {
+        "size": "M",
+        "stock": 10
+      },
+      {
+        "size": "L",
+        "stock": 10
+      },
+      {
+        "size": "XL",
+        "stock": 10
+      }
     ],
     "order": 4
   }

@@ -2227,6 +2227,30 @@ section {
   box-shadow: 0 8px 24px -12px rgba(7, 27, 51, 0.45);
 }
 
+/* Sold-out size (stock at 0, see js/content.js) — kept visible rather
+   than removed, so shoppers see the size exists, but visually struck-
+   through/greyed and inert. Rendered with a real `disabled` attribute
+   (not just this class), which already blocks clicks/focus/hover on its
+   own; the class only carries the strike-through + dimming look. */
+.size-option.is-unavailable {
+  position: relative;
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-muted-strong);
+  cursor: not-allowed;
+}
+
+.size-option.is-unavailable::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 50%;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.6;
+}
+
 /* .form-note's default --ink-muted assumes a light card background;
    this page sits directly on the dark gradient like .contact-grid does,
    so it needs the same light-text override. */
@@ -2608,6 +2632,18 @@ section {
 .static-shader-page .size-option:hover {
   background: #fff;
   border-color: #fff;
+}
+
+/* Sold-out size on the light card background (produit.html) — same
+   strike-through language as the dark-background .is-unavailable above,
+   just recolored for legibility against the opaque white fill this page
+   uses instead of the translucent glass tokens. */
+.static-shader-page .size-option.is-unavailable,
+.static-shader-page .size-option.is-unavailable:hover {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(7, 27, 51, 0.12);
+  color: var(--ink-muted, rgba(7, 27, 51, 0.45));
+  box-shadow: none;
 }
 
 /* Same hover-capable-only gate as .btn:hover above, for the same reason

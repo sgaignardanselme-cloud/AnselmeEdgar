@@ -319,6 +319,7 @@
       front: product.image_front || product.image,
       back: product.image_back,
       profile: product.image_side,
+      worn: product.image_worn,
     };
     page.querySelectorAll("[data-view-photo]").forEach((el) => {
       const src = viewSources[el.dataset.viewPhoto];
@@ -335,37 +336,28 @@
 
     renderProductGrids(products, product.slug);
 
-    // ---- Size selector, built from product.sizes (not hardcoded S/M/L/XL) ----
+    // ---- Size selector, built from product.sizes. Each entry now carries
+    // its own stock ({size, stock}, see admin/config.yml) rather than just
+    // being a plain checkable label — a size at stock 0 still renders (so
+    // shoppers see it exists) but struck-through/disabled (.is-unavailable,
+    // see style.css) instead of clickable. A legacy plain-string entry
+    // (pre-stock content) falls back to unlimited stock rather than being
+    // treated as sold out. ----
     const sizeSelector = page.querySelector("[data-size-selector]");
-    const sizes = Array.isArray(product.sizes) && product.sizes.length ? product.sizes : ["S", "M", "L", "XL"];
+    const rawSizes = Array.isArray(product.sizes) && product.sizes.length ? product.sizes : ["S", "M", "L", "XL"];
+    const sizes = rawSizes.map((entry) =>
+      typeof entry === "string" ? { size: entry, stock: Infinity } : { size: entry.size, stock: Number(entry.stock) }
+    );
     let selectedSize = null;
-    let options = [];
-
-    if (sizeSelector) {
-      sizeSelector.innerHTML = sizes
-        .map((size) => `<button type="button" class="size-option" data-size="${escapeHtml(size)}" aria-pressed="false">${escapeHtml(size)}</button>`)
-        .join("");
-      options = Array.from(sizeSelector.querySelectorAll(".size-option"));
-    }
+    let selectedStock = null;
 
     const note = page.querySelector("[data-size-note]");
 
-    options.forEach((option) => {
-      option.addEventListener("click", () => {
-        options.forEach((o) => {
-          o.classList.remove("is-selected");
-          o.setAttribute("aria-pressed", "false");
-        });
-        option.classList.add("is-selected");
-        option.setAttribute("aria-pressed", "true");
-        selectedSize = option.dataset.size;
-        if (note) note.hidden = true;
-      });
-    });
-
-    // ---- Quantity stepper (min 1, max 10 — same bounds as before) ----
+    // ---- Quantity stepper (min 1, capped at 10 or at the selected size's
+    // stock, whichever is lower — no size selected yet just caps at 10, same
+    // as before the size was known). ----
     const MIN_QUANTITY = 1;
-    const MAX_QUANTITY = 10;
+    const ABSOLUTE_MAX_QUANTITY = 10;
     let quantity = MIN_QUANTITY;
 
     const decreaseBtn = page.querySelector("[data-quantity-decrease]");
@@ -375,10 +367,14 @@
     const quantityPluralEls = page.querySelectorAll("[data-quantity-plural]");
     const totalPriceEl = page.querySelector("[data-total-price]");
 
+    function currentMaxQuantity() {
+      return Math.min(ABSOLUTE_MAX_QUANTITY, selectedStock ?? ABSOLUTE_MAX_QUANTITY);
+    }
+
     function updateQuantityUI() {
       if (quantityValueEl) quantityValueEl.textContent = quantity;
       if (decreaseBtn) decreaseBtn.disabled = quantity <= MIN_QUANTITY;
-      if (increaseBtn) increaseBtn.disabled = quantity >= MAX_QUANTITY;
+      if (increaseBtn) increaseBtn.disabled = quantity >= currentMaxQuantity();
       quantityEchoEls.forEach((el) => {
         el.textContent = quantity;
       });
@@ -394,11 +390,39 @@
         updateQuantityUI();
       });
       increaseBtn.addEventListener("click", () => {
-        quantity = Math.min(MAX_QUANTITY, quantity + 1);
+        quantity = Math.min(currentMaxQuantity(), quantity + 1);
         updateQuantityUI();
       });
     }
     updateQuantityUI();
+
+    if (sizeSelector) {
+      sizeSelector.innerHTML = sizes
+        .map(({ size, stock }) => {
+          const outOfStock = stock <= 0;
+          const stockAttr = Number.isFinite(stock) ? stock : "";
+          return `<button type="button" class="size-option${outOfStock ? " is-unavailable" : ""}" data-size="${escapeHtml(size)}" data-stock="${stockAttr}" aria-pressed="false"${outOfStock ? ` disabled aria-disabled="true" aria-label="${escapeHtml(size)} — épuisé"` : ""}>${escapeHtml(size)}</button>`;
+        })
+        .join("");
+    }
+
+    const options = sizeSelector ? Array.from(sizeSelector.querySelectorAll(".size-option:not(:disabled)")) : [];
+
+    options.forEach((option) => {
+      option.addEventListener("click", () => {
+        sizeSelector.querySelectorAll(".size-option").forEach((o) => {
+          o.classList.remove("is-selected");
+          o.setAttribute("aria-pressed", "false");
+        });
+        option.classList.add("is-selected");
+        option.setAttribute("aria-pressed", "true");
+        selectedSize = option.dataset.size;
+        selectedStock = option.dataset.stock === "" ? Infinity : Number(option.dataset.stock);
+        if (note) note.hidden = true;
+        quantity = Math.min(quantity, currentMaxQuantity());
+        updateQuantityUI();
+      });
+    });
 
     // ---- "Ajouter au panier" (same Cart/showToast globals as before, see script.js) ----
     const addToCartBtn = page.querySelector("[data-add-to-cart-btn]");

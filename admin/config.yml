@@ -146,17 +146,25 @@ collections:
             hint: "Vue de face — affichée en premier sur la fiche produit."
           - { label: "Vue de dos", name: "image_back", widget: "image", required: false }
           - { label: "Vue de profil", name: "image_side", widget: "image", required: false }
+          - { label: "Photo portée", name: "image_worn", widget: "image", required: false, hint: "Le vêtement porté par une personne, en plus des vues sur cintre ci-dessus." }
           - label: "Photos additionnelles"
             name: "gallery"
             widget: "list"
             required: false
             field: { label: "Photo", name: "image", widget: "image" }
-          - label: "Tailles disponibles"
+          - label: "Tailles disponibles et stock"
             name: "sizes"
-            widget: "select"
-            multiple: true
-            options: ["S", "M", "L", "XL"]
-            default: ["S", "M", "L", "XL"]
+            widget: "list"
+            hint: "Une ligne par taille — la quantité disponible détermine si la taille est sélectionnable sur la fiche produit (0 = grisée/barrée)."
+            summary: "{{fields.size}} — {{fields.stock}} en stock"
+            default:
+              - { size: "S", stock: 10 }
+              - { size: "M", stock: 10 }
+              - { size: "L", stock: 10 }
+              - { size: "XL", stock: 10 }
+            fields:
+              - { label: "Taille", name: "size", widget: "select", options: ["S", "M", "L", "XL"] }
+              - { label: "Quantité disponible", name: "stock", widget: "number", value_type: "int", default: 10, min: 0 }
           - { label: "Ordre d'affichage", name: "order", widget: "number", value_type: "int", default: 1, hint: "Les produits s'affichent du plus petit au plus grand numéro." }
 
       - label: "TEST 2"
