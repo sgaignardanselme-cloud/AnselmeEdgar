@@ -1172,6 +1172,18 @@ html.js .signature-reveal {
     inset 0 -1px 1px rgba(255, 255, 255, 0.3);
 }
 
+/* Sold-out state (product.unique_size with stock at 0, see js/content.js
+   swapping the label to "Épuisé") — dimmed and inert like the disabled
+   quantity-stepper buttons, overriding both the base fill and the
+   .static-shader-page opaque-white variant below so it reads as inert on
+   either background. */
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 /* Secondary variant: same glass treatment, just a lighter fill/border
    so it still reads as the less prominent of the two actions. */
 .btn-outline {
@@ -2097,6 +2109,17 @@ section {
   gap: 10px;
 }
 
+/* Replaces the S/M/L/XL buttons entirely for products.unique_size (see
+   js/content.js) — plain text, not a button, since there's nothing to
+   pick. */
+.unique-size-label {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  color: var(--text);
+}
+
 /* Plain underlined text trigger, not another glass button — it's a
    secondary action next to the real size buttons, doesn't need their
    visual weight. */
@@ -2736,7 +2759,8 @@ section {
 .static-shader-page .cart-empty p,
 .static-shader-page .form-note,
 .static-shader-page .gallery-item-label,
-.static-shader-page .footer-nav a {
+.static-shader-page .footer-nav a,
+.static-shader-page .unique-size-label {
   color: rgba(255, 255, 255, 0.82);
 }
 

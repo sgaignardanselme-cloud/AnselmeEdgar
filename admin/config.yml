@@ -165,6 +165,8 @@ collections:
             fields:
               - { label: "Taille", name: "size", widget: "select", options: ["S", "M", "L", "XL"] }
               - { label: "Quantité disponible", name: "stock", widget: "number", value_type: "int", default: 10, min: 0 }
+          - { label: "Ce produit est en taille unique", name: "unique_size", widget: "boolean", default: false, hint: "À cocher pour les produits sans déclinaison de taille (sacs, accessoires...). Le sélecteur S/M/L/XL ci-dessus est alors ignoré et masqué sur la fiche produit, remplacé par le stock unique ci-dessous." }
+          - { label: "Stock (si taille unique)", name: "unique_size_stock", widget: "number", value_type: "int", default: 10, min: 0, required: false, hint: "Utilisé uniquement si \"Ce produit est en taille unique\" est coché ci-dessus." }
           - { label: "Ordre d'affichage", name: "order", widget: "number", value_type: "int", default: 1, hint: "Les produits s'affichent du plus petit au plus grand numéro." }
 
       - label: "TEST 2"

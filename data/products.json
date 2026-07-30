@@ -29,6 +29,8 @@
         "stock": 10
       }
     ],
+    "unique_size": false,
+    "unique_size_stock": 0,
     "order": 1
   },
   {
@@ -61,6 +63,8 @@
         "stock": 10
       }
     ],
+    "unique_size": true,
+    "unique_size_stock": 10,
     "order": 1
   },
   {
@@ -93,6 +97,8 @@
         "stock": 10
       }
     ],
+    "unique_size": false,
+    "unique_size_stock": 0,
     "order": 1
   },
   {
@@ -125,6 +131,8 @@
         "stock": 10
       }
     ],
+    "unique_size": false,
+    "unique_size_stock": 0,
     "order": 2
   },
   {
@@ -157,6 +165,8 @@
         "stock": 10
       }
     ],
+    "unique_size": false,
+    "unique_size_stock": 0,
     "order": 3
   },
   {
@@ -189,6 +199,8 @@
         "stock": 10
       }
     ],
+    "unique_size": false,
+    "unique_size_stock": 0,
     "order": 4
   }
 ]

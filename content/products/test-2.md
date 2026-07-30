@@ -18,5 +18,7 @@ sizes:
     stock: 10
   - size: XL
     stock: 10
+unique_size: false
+unique_size_stock: 0
 order: 1
 ---

@@ -342,7 +342,12 @@
     // shoppers see it exists) but struck-through/disabled (.is-unavailable,
     // see style.css) instead of clickable. A legacy plain-string entry
     // (pre-stock content) falls back to unlimited stock rather than being
-    // treated as sold out. ----
+    // treated as sold out.
+    //
+    // A product can also skip sizes entirely (product.unique_size, e.g.
+    // bags/accessories) — that's handled below, after this block builds
+    // the shared quantity-stepper machinery both modes rely on. ----
+    const sizeSelectorGroup = page.querySelector("[data-size-selector-group]");
     const sizeSelector = page.querySelector("[data-size-selector]");
     const rawSizes = Array.isArray(product.sizes) && product.sizes.length ? product.sizes : ["S", "M", "L", "XL"];
     const sizes = rawSizes.map((entry) =>
@@ -366,6 +371,7 @@
     const quantityEchoEls = page.querySelectorAll("[data-quantity-echo]");
     const quantityPluralEls = page.querySelectorAll("[data-quantity-plural]");
     const totalPriceEl = page.querySelector("[data-total-price]");
+    const addToCartBtn = page.querySelector("[data-add-to-cart-btn]");
 
     function currentMaxQuantity() {
       return Math.min(ABSOLUTE_MAX_QUANTITY, selectedStock ?? ABSOLUTE_MAX_QUANTITY);
@@ -394,9 +400,28 @@
         updateQuantityUI();
       });
     }
-    updateQuantityUI();
 
-    if (sizeSelector) {
+    if (product.unique_size) {
+      // No S/M/L/XL at all — the size-selector-group is replaced by a
+      // plain "Taille unique" label (not just hidden, so shoppers still
+      // see this was deliberate rather than a missing/broken selector),
+      // and the size is implicitly "selected" against the single stock
+      // count. Sold out (stock 0) disables the quantity stepper (via
+      // currentMaxQuantity() returning 0) and the "Ajouter au panier"
+      // button itself, with its label swapped to make the reason obvious.
+      if (sizeSelectorGroup) {
+        sizeSelectorGroup.innerHTML = '<p class="unique-size-label">Taille unique</p>';
+      }
+      if (note) note.hidden = true;
+      selectedSize = "Taille unique";
+      selectedStock = Number(product.unique_size_stock) || 0;
+      quantity = Math.min(quantity, currentMaxQuantity());
+
+      if (addToCartBtn && selectedStock <= 0) {
+        addToCartBtn.disabled = true;
+        addToCartBtn.textContent = "Épuisé";
+      }
+    } else if (sizeSelector) {
       sizeSelector.innerHTML = sizes
         .map(({ size, stock }) => {
           const outOfStock = stock <= 0;
@@ -404,28 +429,29 @@
           return `<button type="button" class="size-option${outOfStock ? " is-unavailable" : ""}" data-size="${escapeHtml(size)}" data-stock="${stockAttr}" aria-pressed="false"${outOfStock ? ` disabled aria-disabled="true" aria-label="${escapeHtml(size)} — épuisé"` : ""}>${escapeHtml(size)}</button>`;
         })
         .join("");
+
+      const options = Array.from(sizeSelector.querySelectorAll(".size-option:not(:disabled)"));
+
+      options.forEach((option) => {
+        option.addEventListener("click", () => {
+          sizeSelector.querySelectorAll(".size-option").forEach((o) => {
+            o.classList.remove("is-selected");
+            o.setAttribute("aria-pressed", "false");
+          });
+          option.classList.add("is-selected");
+          option.setAttribute("aria-pressed", "true");
+          selectedSize = option.dataset.size;
+          selectedStock = option.dataset.stock === "" ? Infinity : Number(option.dataset.stock);
+          if (note) note.hidden = true;
+          quantity = Math.min(quantity, currentMaxQuantity());
+          updateQuantityUI();
+        });
+      });
     }
 
-    const options = sizeSelector ? Array.from(sizeSelector.querySelectorAll(".size-option:not(:disabled)")) : [];
-
-    options.forEach((option) => {
-      option.addEventListener("click", () => {
-        sizeSelector.querySelectorAll(".size-option").forEach((o) => {
-          o.classList.remove("is-selected");
-          o.setAttribute("aria-pressed", "false");
-        });
-        option.classList.add("is-selected");
-        option.setAttribute("aria-pressed", "true");
-        selectedSize = option.dataset.size;
-        selectedStock = option.dataset.stock === "" ? Infinity : Number(option.dataset.stock);
-        if (note) note.hidden = true;
-        quantity = Math.min(quantity, currentMaxQuantity());
-        updateQuantityUI();
-      });
-    });
+    updateQuantityUI();
 
     // ---- "Ajouter au panier" (same Cart/showToast globals as before, see script.js) ----
-    const addToCartBtn = page.querySelector("[data-add-to-cart-btn]");
     if (addToCartBtn) {
       addToCartBtn.addEventListener("click", () => {
         if (!selectedSize) {
