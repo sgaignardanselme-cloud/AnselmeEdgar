@@ -11,7 +11,7 @@ image_worn: ''
 gallery: []
 sizes:
   - size: S
-    stock: 10
+    stock: 1
   - size: M
     stock: 10
   - size: L
