@@ -1,0 +1,14 @@
+{
+  "items": [
+    { "name": "A.M.", "rating": 5, "text": "[PLACEHOLDER] — Coupe parfaite, matière au top. Hâte de voir le prochain drop." },
+    { "name": "L.B.", "rating": 5, "text": "[PLACEHOLDER] — Livraison rapide, emballage soigné, exactement ce qu'on attend d'une marque premium." },
+    { "name": "T.K.", "rating": 4, "text": "[PLACEHOLDER] — Le storytelling autour du drop rend l'achat spécial, pas juste un t-shirt." },
+    { "name": "S.R.", "rating": 5, "text": "[PLACEHOLDER] — Qualité au rendez-vous, je recommande." },
+    { "name": "M.D.", "rating": 5, "text": "[PLACEHOLDER] — Univers cohérent du site jusqu'au produit reçu, franchement bluffant." },
+    { "name": "J.P.", "rating": 4, "text": "[PLACEHOLDER] — Taille bien, conforme au guide des tailles." },
+    { "name": "C.N.", "rating": 5, "text": "[PLACEHOLDER] — Premier achat, déjà hâte du prochain drop." },
+    { "name": "R.V.", "rating": 5, "text": "[PLACEHOLDER] — Belle attention aux détails, ça se sent que c'est pensé." },
+    { "name": "E.F.", "rating": 4, "text": "[PLACEHOLDER] — Service client réactif sur Instagram, très pro." },
+    { "name": "N.G.", "rating": 5, "text": "[PLACEHOLDER] — Ambiance musée du site jusqu'au packaging, cohérent de bout en bout." }
+  ]
+}

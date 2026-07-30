@@ -105,6 +105,182 @@
     }
   }
 
+  // Avis clients (index.html only — [data-reviews-section] is only
+  // present there): an arc carousel adapted from a React/Framer Motion
+  // reference the marque supplied. Reproduced here as plain CSS custom
+  // properties (--rx/--ry/--rs/--ro/--rz, see .review-card in style.css)
+  // driven by this controller instead of Framer's spring animation —
+  // CSS transitions on those same properties give the "cards glide into
+  // their new arc position" effect for free.
+  function reviewCardHtml(review, index) {
+    const rating = Math.max(0, Math.min(5, Math.round(Number(review.rating)) || 0));
+    const stars = "★".repeat(rating) + "☆".repeat(5 - rating);
+    const name = review.name || "Client·e";
+    return `
+      <button type="button" class="review-card" data-review-card data-index="${index}" aria-label="${escapeHtml(name)} — ${rating} sur 5 étoiles">
+        <span class="review-stars" aria-hidden="true">${stars}</span>
+        <p class="review-text">${escapeHtml(review.text || "")}</p>
+        <p class="review-name">${escapeHtml(name)}</p>
+      </button>
+    `;
+  }
+
+  // Runs the actual arc/autoplay/nav mechanics against whatever
+  // .review-card buttons currently exist in the stage — called once for
+  // the static placeholder markup (so the carousel works immediately,
+  // even if the settings.json fetch below is slow or fails) and again
+  // whenever renderReviews() swaps in real CMS content, since that
+  // innerHTML replacement invalidates the old button references.
+  function setupReviewsCarousel(container) {
+    const stage = container.querySelector("[data-reviews-stage]");
+    const dotsContainer = container.querySelector("[data-reviews-dots]");
+    const prevBtn = container.querySelector("[data-reviews-prev]");
+    const nextBtn = container.querySelector("[data-reviews-next]");
+    if (!stage) return;
+
+    const cards = Array.from(stage.querySelectorAll("[data-review-card]"));
+    const total = cards.length;
+    if (!total) return;
+
+    // 5 visible at once (the active card plus 2 either side) — matches
+    // the reference component's VISIBLE_COUNT, used both for the sin/cos
+    // spacing below and for which cards get hidden outside that window.
+    const VISIBLE_HALF = 2;
+    let active = 0;
+    let autoplayId = null;
+    let pausedByUser = false;
+
+    if (dotsContainer) {
+      dotsContainer.innerHTML = cards
+        .map((_, i) => `<button type="button" class="reviews-dot" data-dot-index="${i}" role="tab" aria-label="Avis ${i + 1} sur ${total}"></button>`)
+        .join("");
+    }
+    const dots = dotsContainer ? Array.from(dotsContainer.querySelectorAll("[data-dot-index]")) : [];
+
+    function radii() {
+      const computed = getComputedStyle(container);
+      return {
+        x: parseFloat(computed.getPropertyValue("--reviews-radius-x")) || 220,
+        y: parseFloat(computed.getPropertyValue("--reviews-radius-y")) || 100,
+      };
+    }
+
+    function update() {
+      const { x: radiusX, y: radiusY } = radii();
+      cards.forEach((card, i) => {
+        let offset = i - active;
+        if (offset > total / 2) offset -= total;
+        if (offset < -total / 2) offset += total;
+
+        const isVisible = Math.abs(offset) <= VISIBLE_HALF;
+        card.classList.toggle("is-visible", isVisible);
+        card.classList.toggle("is-active", offset === 0);
+        card.tabIndex = isVisible ? 0 : -1;
+
+        if (!isVisible) {
+          card.style.setProperty("--ro", "0");
+          card.style.setProperty("--rz", "0");
+          return;
+        }
+
+        const angle = (offset / 5) * Math.PI;
+        const distance = Math.abs(offset);
+        const maxDistance = VISIBLE_HALF + 1;
+
+        card.style.setProperty("--rx", `${Math.sin(angle) * radiusX}px`);
+        card.style.setProperty("--ry", `${-Math.cos(angle) * radiusY}px`);
+        card.style.setProperty("--rs", String(Math.max(0, 1 - (distance / maxDistance) * 0.3)));
+        card.style.setProperty("--ro", String(Math.max(0.3, 1 - (distance / maxDistance) * 0.7)));
+        card.style.setProperty("--rz", String(VISIBLE_HALF + 3 - distance));
+      });
+
+      dots.forEach((dot, i) => dot.classList.toggle("is-active", i === active));
+    }
+
+    function goTo(index) {
+      active = ((index % total) + total) % total;
+      update();
+    }
+
+    function next() {
+      goTo(active + 1);
+    }
+
+    function prev() {
+      goTo(active - 1);
+    }
+
+    function stopAutoplay() {
+      if (autoplayId) {
+        window.clearInterval(autoplayId);
+        autoplayId = null;
+      }
+    }
+
+    function startAutoplay() {
+      stopAutoplay();
+      if (pausedByUser) return;
+      autoplayId = window.setInterval(next, 4000);
+    }
+
+    // Hover and focus both pause it — a keyboard user tabbing through the
+    // dots/cards shouldn't have the carousel jump to a new position out
+    // from under them mid-navigation, same reasoning as the mouse case.
+    container.addEventListener("mouseenter", () => {
+      pausedByUser = true;
+      stopAutoplay();
+    });
+    container.addEventListener("mouseleave", () => {
+      pausedByUser = false;
+      startAutoplay();
+    });
+    container.addEventListener("focusin", () => {
+      pausedByUser = true;
+      stopAutoplay();
+    });
+    container.addEventListener("focusout", (event) => {
+      if (container.contains(event.relatedTarget)) return;
+      pausedByUser = false;
+      startAutoplay();
+    });
+
+    cards.forEach((card, i) => card.addEventListener("click", () => goTo(i)));
+    dots.forEach((dot, i) => dot.addEventListener("click", () => goTo(i)));
+    if (prevBtn) prevBtn.addEventListener("click", prev);
+    if (nextBtn) nextBtn.addEventListener("click", next);
+
+    // --reviews-radius-x/-y (see style.css) change at the 640px media
+    // query breakpoint — re-reading them on resize (rather than only at
+    // setup time) keeps the arc correctly scaled across an orientation
+    // change or a resized window, not just at initial load.
+    let resizePending = false;
+    window.addEventListener("resize", () => {
+      if (resizePending) return;
+      resizePending = true;
+      window.requestAnimationFrame(() => {
+        resizePending = false;
+        update();
+      });
+    });
+
+    container.classList.add("is-enhanced");
+    update();
+    startAutoplay();
+  }
+
+  function renderReviews(settings) {
+    const container = document.querySelector("[data-reviews-section]");
+    if (!container) return;
+
+    const items = settings?.reviews?.items;
+    if (Array.isArray(items) && items.length) {
+      const stage = container.querySelector("[data-reviews-stage]");
+      if (stage) stage.innerHTML = items.map(reviewCardHtml).join("");
+    }
+
+    setupReviewsCarousel(container);
+  }
+
   // Size guide table (produit.html): rows come straight from
   // settings.size_guide.rows (see admin/config.yml) — no per-product
   // logic, one shared table for the whole site for now. The modal's own
@@ -493,5 +669,12 @@
       renderProductGrids(products, params.get("p"));
     }
   }
+
+  // Unconditional (not gated behind `if (settings)`) — the carousel's
+  // arc/autoplay/nav mechanics are independent of the CMS fetch actually
+  // succeeding. If it failed, renderReviews still enhances the 10
+  // hardcoded placeholder cards already in index.html's markup; it just
+  // has no real review text to swap in over them.
+  renderReviews(settings || {});
 
 })();

@@ -412,6 +412,93 @@
       </section>
     </div>
 
+    <div class="divider"></div>
+
+    <!-- AVIS CLIENTS — carrousel en arc de cercle : la carte centrale est
+         la plus grande/nette, celles de part et d'autre rétrécissent et
+         s'estompent avec la distance (voir setupReviewsCarousel dans
+         js/content.js). Fonctionne sans JS comme une simple rangée
+         défilante horizontalement (voir .reviews-stage) ; le JS ajoute
+         .is-enhanced sur .reviews-carousel pour passer en mode arc avec
+         flèches/points, et remplace ces 10 cartes par le contenu réel du
+         CMS (Réglages du site → "Avis clients") s'il diffère de ce
+         placeholder. -->
+    <section class="reveal">
+      <div class="container">
+        <p class="section-label">Avis clients</p>
+        <h2 class="section-title">Ce qu'ils en disent</h2>
+
+        <div class="reviews-carousel" data-reviews-section aria-roledescription="carrousel" aria-label="Avis clients">
+          <div class="reviews-stage" data-reviews-stage>
+            <button type="button" class="review-card" data-review-card data-index="0" aria-label="A.M. — 5 sur 5 étoiles">
+              <span class="review-stars" aria-hidden="true">★★★★★</span>
+              <p class="review-text">[PLACEHOLDER] — Coupe parfaite, matière au top. Hâte de voir le prochain drop.</p>
+              <p class="review-name">A.M.</p>
+            </button>
+            <button type="button" class="review-card" data-review-card data-index="1" aria-label="L.B. — 5 sur 5 étoiles">
+              <span class="review-stars" aria-hidden="true">★★★★★</span>
+              <p class="review-text">[PLACEHOLDER] — Livraison rapide, emballage soigné, exactement ce qu'on attend d'une marque premium.</p>
+              <p class="review-name">L.B.</p>
+            </button>
+            <button type="button" class="review-card" data-review-card data-index="2" aria-label="T.K. — 4 sur 5 étoiles">
+              <span class="review-stars" aria-hidden="true">★★★★☆</span>
+              <p class="review-text">[PLACEHOLDER] — Le storytelling autour du drop rend l'achat spécial, pas juste un t-shirt.</p>
+              <p class="review-name">T.K.</p>
+            </button>
+            <button type="button" class="review-card" data-review-card data-index="3" aria-label="S.R. — 5 sur 5 étoiles">
+              <span class="review-stars" aria-hidden="true">★★★★★</span>
+              <p class="review-text">[PLACEHOLDER] — Qualité au rendez-vous, je recommande.</p>
+              <p class="review-name">S.R.</p>
+            </button>
+            <button type="button" class="review-card" data-review-card data-index="4" aria-label="M.D. — 5 sur 5 étoiles">
+              <span class="review-stars" aria-hidden="true">★★★★★</span>
+              <p class="review-text">[PLACEHOLDER] — Univers cohérent du site jusqu'au produit reçu, franchement bluffant.</p>
+              <p class="review-name">M.D.</p>
+            </button>
+            <button type="button" class="review-card" data-review-card data-index="5" aria-label="J.P. — 4 sur 5 étoiles">
+              <span class="review-stars" aria-hidden="true">★★★★☆</span>
+              <p class="review-text">[PLACEHOLDER] — Taille bien, conforme au guide des tailles.</p>
+              <p class="review-name">J.P.</p>
+            </button>
+            <button type="button" class="review-card" data-review-card data-index="6" aria-label="C.N. — 5 sur 5 étoiles">
+              <span class="review-stars" aria-hidden="true">★★★★★</span>
+              <p class="review-text">[PLACEHOLDER] — Premier achat, déjà hâte du prochain drop.</p>
+              <p class="review-name">C.N.</p>
+            </button>
+            <button type="button" class="review-card" data-review-card data-index="7" aria-label="R.V. — 5 sur 5 étoiles">
+              <span class="review-stars" aria-hidden="true">★★★★★</span>
+              <p class="review-text">[PLACEHOLDER] — Belle attention aux détails, ça se sent que c'est pensé.</p>
+              <p class="review-name">R.V.</p>
+            </button>
+            <button type="button" class="review-card" data-review-card data-index="8" aria-label="E.F. — 4 sur 5 étoiles">
+              <span class="review-stars" aria-hidden="true">★★★★☆</span>
+              <p class="review-text">[PLACEHOLDER] — Service client réactif sur Instagram, très pro.</p>
+              <p class="review-name">E.F.</p>
+            </button>
+            <button type="button" class="review-card" data-review-card data-index="9" aria-label="N.G. — 5 sur 5 étoiles">
+              <span class="review-stars" aria-hidden="true">★★★★★</span>
+              <p class="review-text">[PLACEHOLDER] — Ambiance musée du site jusqu'au packaging, cohérent de bout en bout.</p>
+              <p class="review-name">N.G.</p>
+            </button>
+          </div>
+
+          <div class="reviews-controls">
+            <button type="button" class="carousel-nav-btn" data-reviews-prev aria-label="Avis précédent">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 6l-6 6 6 6" />
+              </svg>
+            </button>
+            <div class="reviews-dots" role="tablist" aria-label="Choisir un avis" data-reviews-dots></div>
+            <button type="button" class="carousel-nav-btn" data-reviews-next aria-label="Avis suivant">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M9 6l6 6-6 6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <footer class="site-footer">

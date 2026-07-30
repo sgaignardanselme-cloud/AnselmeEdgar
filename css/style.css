@@ -2049,6 +2049,188 @@ section {
   transform: scale(1.4);
 }
 
+/* ---------- Avis clients (reviews arc carousel) ----------
+   Two layers on purpose: without JS, .reviews-stage is a plain
+   horizontally-scrollable row (every review readable, nothing broken).
+   js/content.js's setupReviewsCarousel() adds .is-enhanced once it has
+   wired up the arc math/autoplay/nav, which is what switches .review-card
+   over to position:absolute and starts reading the --rx/--ry/--rs/--ro/--rz
+   custom properties it sets per card on every index change. Radius/card
+   size live here as custom properties (not JS constants) specifically so
+   the mobile media query below can shrink the arc without the two ever
+   getting out of sync — setupReviewsCarousel() reads --reviews-radius-*
+   back via getComputedStyle() on every update. */
+.reviews-carousel {
+  --reviews-radius-x: 220px;
+  --reviews-radius-y: 100px;
+  --reviews-card-w: 190px;
+  --reviews-card-h: 136px;
+  position: relative;
+}
+
+@media (max-width: 640px) {
+  .reviews-carousel {
+    --reviews-radius-x: 108px;
+    --reviews-radius-y: 54px;
+    --reviews-card-w: 150px;
+    --reviews-card-h: 128px;
+  }
+}
+
+.reviews-stage {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.reviews-carousel.is-enhanced .reviews-stage {
+  display: block;
+  overflow: visible;
+  position: relative;
+  height: 300px;
+}
+
+@media (max-width: 640px) {
+  .reviews-carousel.is-enhanced .reviews-stage {
+    height: 230px;
+  }
+}
+
+.review-card {
+  flex: 0 0 auto;
+  width: var(--reviews-card-w);
+  height: var(--reviews-card-h);
+  scroll-snap-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 16px;
+  text-align: left;
+  font-family: var(--font-body);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  cursor: pointer;
+}
+
+/* Only in enhanced/arc mode do cards stack on top of each other and need
+   positioning by transform — the plain scrolling row above lays them out
+   with normal flex, no absolute positioning or custom-property transform
+   needed. Off-screen (not within the visible arc window) cards keep
+   pointer-events:none via .is-visible below, so they can't be tabbed to
+   or clicked while faded out mid-transition. */
+.reviews-carousel.is-enhanced .review-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) translate(var(--rx, 0px), var(--ry, 0px)) scale(var(--rs, 1));
+  opacity: var(--ro, 0);
+  z-index: var(--rz, 1);
+  pointer-events: none;
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease;
+}
+
+.reviews-carousel.is-enhanced .review-card.is-visible {
+  pointer-events: auto;
+}
+
+.review-card.is-active {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 12px 30px -14px rgba(7, 27, 51, 0.5);
+}
+
+.review-stars {
+  color: #ffd166;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+}
+
+.review-text {
+  font-size: 0.76rem;
+  line-height: 1.45;
+  color: var(--text-muted-strong);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.review-name {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  color: var(--text-muted-strong);
+}
+
+.review-card.is-active .review-text,
+.review-card.is-active .review-name {
+  color: var(--text);
+}
+
+/* Hidden until .is-enhanced (see comment above) — without JS driving
+   goTo(), prev()/next() and the dots would have nothing to do. */
+.reviews-controls {
+  display: none;
+}
+
+.reviews-carousel.is-enhanced .reviews-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+/* Own dot styles rather than reusing .carousel-dot: 10 reviews need to
+   wrap gracefully on narrow screens, which the produit.html photo
+   carousel's 3-4-dot row never has to handle. */
+.reviews-dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 220px;
+  gap: 2px;
+}
+
+.reviews-dot {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.reviews-dot::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.reviews-dot:hover::before {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.reviews-dot.is-active::before {
+  background: #fff;
+  transform: scale(1.4);
+}
+
 .product-info {
   flex: 1 1 50%;
 }
