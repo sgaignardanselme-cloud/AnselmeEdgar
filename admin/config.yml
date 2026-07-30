@@ -3,22 +3,23 @@ backend:
   repo: sgaignardanselme-cloud/AnselmeEdgar
   branch: main
 
-# Direct GitHub OAuth (no Netlify Identity / Git Gateway involved at all).
-# Netlify still brokers the OAuth handshake itself (an "external OAuth
-# client" registered in the site's dashboard — see README.md
-# "Administration du contenu (CMS)"), but only to exchange the GitHub
-# login for a token; it never issues its own Identity accounts. Every
-# commit Decap makes is authenticated as whichever GitHub user logged in
-# and pushed straight to `branch` above — that GitHub user needs write
-# access to this repo (see README.md).
+# Sveltia CMS (Decap-compatible rewrite — see admin/index.html) reads this
+# same backend block, but doesn't need base_url/an OAuth proxy at all: its
+# login screen offers "Sign In with Token" (a GitHub personal access
+# token, pasted in directly) alongside/instead of the OAuth flow, which is
+# enough for the two of us as the only GitHub users on this repo — see
+# README.md "Administration du contenu (CMS)". No Netlify Identity, Git
+# Gateway, or self-hosted OAuth Worker involved. Every commit is
+# authenticated as whichever GitHub user's token/login was used and
+# pushed straight to `branch` above — that GitHub user needs write access
+# to this repo (see README.md).
 publish_mode: simple
 
-# Only kicks in when the CMS is opened from localhost — lets you test
-# /admin locally (edits write straight to your local files) by running
-# `npx decap-server` in a second terminal alongside your usual dev
-# server, with no GitHub login needed. Has no effect on the deployed
-# site, where the github backend above is what's actually used.
-local_backend: true
+# local_backend: true used to enable local file editing via `npx
+# decap-server` — Sveltia CMS's official Decap migration notes list this
+# as a deprecated/no-longer-needed option, so it's dropped rather than
+# left in as a no-op. Local testing without pushing to GitHub is instead
+# just "Sign In with Token" against the real repo (see README.md).
 
 media_folder: "images/uploads"
 public_folder: "/images/uploads"

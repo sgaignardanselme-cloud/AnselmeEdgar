@@ -76,7 +76,6 @@ listés ici pour mémoire (cf. brief section 6) :
       partage (Instagram, TikTok, WhatsApp...) ne chargent pas le JavaScript de la page,
       donc ces balises doivent rester du texte en dur. Cherchez `[À REMPLACER` dans les
       fichiers `.html` — il faut l'URL réelle du site une fois déployé.
-
 ## Images
 
 Les photos (hero, univers, produits) s'ajoutent depuis le CMS (`/admin`),
@@ -86,13 +85,14 @@ pour tout visuel géré à la main hors CMS.
 
 ## Administration du contenu (CMS)
 
-Le site utilise [Decap CMS](https://decapcms.org/) (ex-Netlify CMS) pour éditer
-le contenu sans toucher au code — accessible sur `/admin` une fois le site
-déployé.
+Le site utilise [Sveltia CMS](https://github.com/sveltia/sveltia-cms) — une
+réécriture moderne de Decap CMS (ex-Netlify CMS), compatible avec le même
+format de `config.yml` — pour éditer le contenu sans toucher au code,
+accessible sur `/admin` une fois le site déployé.
 
 ### Comment ça marche (architecture)
 
-Le site reste 100% HTML/CSS/JS statique — Decap CMS n'ajoute ni serveur ni
+Le site reste 100% HTML/CSS/JS statique — Sveltia CMS n'ajoute ni serveur ni
 générateur de pages. Le mécanisme :
 
 1. **`admin/config.yml`** décrit les collections éditables dans le CMS :
@@ -118,25 +118,36 @@ générateur de pages. Le mécanisme :
    réellement cochées pour ce produit dans le CMS, et la grille "Autres
    pièces du drop".
 
-### Configurer l'authentification GitHub (à faire une seule fois)
+### Se connecter à l'administration : "Sign In with Token"
 
 Le backend est `github` en direct (`admin/config.yml`) — pas de Netlify
-Identity ni de Git Gateway. La connexion "Login with GitHub" repose sur une
-OAuth App GitHub, dont les identifiants (Client ID/Secret) sont enregistrés
-côté Netlify pour que Decap n'ait jamais à voir le secret. Procédure
-détaillée : voir la réponse donnée séparément ("créer une OAuth App sur
-GitHub"), résumée ici :
+Identity, pas de Git Gateway, et (depuis le passage à
+[Sveltia CMS](https://github.com/sveltia/sveltia-cms), voir
+`admin/index.html`) **pas non plus besoin d'OAuth App ni de service
+intermédiaire à héberger**. Une OAuth App GitHub + un proxy OAuth
+(Netlify, ou un Worker Cloudflare auto-hébergé) ne sont vraiment
+nécessaires que pour ouvrir l'édition à des utilisateurs qui n'ont pas de
+compte GitHub personnel ; ici on est seulement deux, tous deux déjà
+utilisateurs GitHub avec accès en écriture au dépôt — Sveltia CMS a une
+méthode plus simple pour exactement ce cas.
 
-1. Créer une OAuth App sur **github.com → Settings → Developer settings →
-   OAuth Apps → New OAuth App**, avec comme callback URL
-   `https://api.netlify.com/auth/done`.
-2. Enregistrer son Client ID + Client Secret dans le tableau de bord Netlify
-   du site : **Site configuration → Access control (ou "General") → OAuth →
-   Install provider → GitHub**.
+Sur l'écran de connexion de `/admin`, cliquez **"Sign In with Token"** :
+
+1. Un lien pré-rempli s'ouvre vers **github.com/settings/tokens/new**, avec
+   les autorisations (`repo`) déjà cochées.
+2. Donnez un nom au token (ex. "CMS AnselmeEdgar"), choisissez une
+   expiration, cliquez **Generate token**, copiez-le (affiché une seule
+   fois).
+3. Collez-le dans la fenêtre de connexion de Sveltia CMS.
+
+Le token reste stocké dans le navigateur (local storage) — à refaire si
+vous videz le stockage local ou changez de navigateur/appareil. Chaque
+personne qui doit publier génère son propre token sur son propre compte
+GitHub (voir "Donner accès au dépôt" ci-dessous pour les droits requis).
 
 ### Donner accès au dépôt à votre associé
 
-Différence importante par rapport à Git Gateway : ici, Decap committe
+Différence importante par rapport à Git Gateway : ici, le CMS committe
 directement en tant que **l'utilisateur GitHub connecté** — chaque personne
 qui doit pouvoir publier a donc besoin d'un compte GitHub avec accès en
 écriture à ce dépôt (`sgaignardanselme-cloud/AnselmeEdgar`), pas juste d'une
@@ -146,38 +157,34 @@ l'invitation reçue par email/notification GitHub).
 
 ### Accéder à l'interface d'administration
 
-- Allez sur `https://votre-site.netlify.app/admin/`.
-- Cliquez **"Login with GitHub"** → une fenêtre GitHub s'ouvre → autorisez
-  l'application (première fois seulement) → vous revenez sur `/admin`,
-  connecté.
-- Vous arrivez sur l'interface Decap CMS : "Réglages du site" (les textes de
-  chaque section) et "Produits" (la collection des pièces du drop, avec
+- Allez sur `https://votre-site.pages.dev/admin/` (ou votre domaine
+  personnalisé si vous en avez configuré un côté Cloudflare).
+- Connectez-vous via **"Sign In with Token"** (voir ci-dessus).
+- Vous arrivez sur l'interface Sveltia CMS : "Réglages du site" (les textes
+  de chaque section) et "Produits" (la collection des pièces du drop, avec
   boutons pour en ajouter/supprimer).
 
 ### Publier une modification — est-ce automatique ?
 
-**Oui, comme avec Git.** Cliquer sur "Publier" dans le CMS crée directement
-un commit sur la branche `main` du dépôt, authentifié comme votre compte
-GitHub — exactement comme si vous aviez fait `git push` vous-même. Netlify
-détecte ce nouveau commit et relance automatiquement `npm run build` (voir
-`netlify.toml`), qui recompile `data/settings.json`/`data/products.json` à
-partir de vos changements, puis republie le site. Il n'y a **aucune étape
-manuelle supplémentaire** — comptez en général 1 à 2 minutes entre le clic
-sur "Publier" et la mise en ligne effective (le temps que Netlify build +
-déploie).
+Cliquer sur "Publier" dans le CMS crée directement un commit sur la branche
+`main` du dépôt, authentifié comme votre compte GitHub — exactement comme si
+vous aviez fait `git push` vous-même. `data/settings.json`/
+`data/products.json` doivent ensuite être recompilés depuis
+`content/settings/`/`content/products/` par `npm run build` (voir
+`scripts/build-content.js`) avant que le changement soit visible sur le site
+— **selon comment ce dépôt est branché à Cloudflare** (Pages avec build
+automatique sur chaque push, ou un déploiement déclenché autrement), cette
+étape peut être automatique ou nécessiter une action manuelle ; vérifiez la
+configuration de build de votre projet Cloudflare pour confirmer laquelle
+s'applique ici. (Sous Netlify, avant la migration, ce recompile + la
+republication étaient entièrement automatiques après chaque "Publier",
+sans étape manuelle — comptez le même ordre de grandeur, 1 à 2 minutes,
+si le build automatique Cloudflare est bien configuré.)
 
 Le mode de publication est actuellement `simple` (publication directe, sans
-brouillon/validation) — avec deux personnes qui éditent, on peut passer à
-l'`editorial_workflow` de Decap si vous voulez un système de brouillons
-relus avant publication ; demandez si ça vous intéresse.
-
-### Tester en local (optionnel)
-
-Pour éditer depuis votre machine sans passer par l'authentification GitHub :
-lancez `npx decap-server` dans un terminal, votre serveur statique habituel
-dans un autre, puis ouvrez `/admin` — `local_backend: true` dans
-`config.yml` fait que Decap écrit alors directement dans vos fichiers
-locaux.
+brouillon/validation). Decap CMS propose un `editorial_workflow` (brouillons
++ relecture avant publication) pour ce cas, mais Sveltia CMS ne le supporte
+pas encore à ce jour — publication directe uniquement pour l'instant.
 
 ## Déploiement
 

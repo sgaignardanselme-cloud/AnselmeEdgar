@@ -7,11 +7,13 @@
   <title>Administration — [NOM DE LA MARQUE]</title>
 </head>
 <body>
-  <!-- Standard Decap CMS static-site install: this page has no build step
-       of its own — it loads the CMS app from the CDN, which then reads
-       ./config.yml (same folder, picked up automatically) to know what
-       collections/fields to show and how to authenticate (direct GitHub
-       OAuth — see README.md). -->
-  <script src="https://unpkg.com/decap-cms@^3.3.3/dist/decap-cms.js"></script>
+  <!-- Sveltia CMS static-site install (Decap CMS-compatible rewrite,
+       swapped in for its "Sign In with Token" support — see README.md):
+       this page has no build step of its own — it loads the CMS app from
+       the CDN, which then reads ./config.yml (same folder, picked up
+       automatically) to know what collections/fields to show. No
+       separate CSS link needed — Sveltia bundles its own styles into
+       this one script. -->
+  <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
 </body>
 </html>
