@@ -244,76 +244,109 @@ function showToast(message) {
 // below and the failsafe timeout, both added after a previous bug where
 // a reveal effect that rebuilt its own text from an empty string could
 // get stuck showing nothing.
+//
+// window.__typeBrandName is exposed so js/content.js can hand the real
+// CMS brand name to THIS controller once its fetch resolves, instead of
+// content.js's generic [data-cms] handling doing a blind
+// `el.textContent = value` on this element — that would replace the
+// span-per-character structure below with a single plain text node
+// showing the full name outright, and since a same-origin settings.json
+// fetch typically resolves in a few milliseconds (far under the 170ms
+// per-letter interval), that overwrite was winning the race almost
+// every time — the animation technically ran, but got clobbered before
+// a second letter ever appeared, which is exactly why it looked like it
+// "never triggered at all" even though the code itself had no error.
 (() => {
   const target = document.querySelector("[data-typing-name]");
   if (!target) return;
 
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  // The full name is already sitting in the DOM as plain text (either
-  // the static placeholder or, if content.js's CMS fetch already won
-  // the race, the real brand name) — this only ever reads it, never
-  // clears it up front. No JS at all, or reduced-motion, and this plain
-  // text is simply what stays on screen; nothing to do here.
-  const fullText = target.textContent;
-  if (prefersReducedMotion || !fullText || !fullText.trim()) return;
-
   const TYPING_INTERVAL_MS = 170; // within the requested ~150-200ms range
 
-  try {
-    // Built into a detached fragment first, not the live element — if
-    // anything here throws partway through, `target` has not been
-    // touched at all yet, so it's still showing its original, complete,
-    // fully-visible text exactly as if this script had never run.
-    const fragment = document.createDocumentFragment();
-    const spans = Array.from(fullText).map((char) => {
-      const span = document.createElement("span");
-      span.className = "typing-char";
-      span.textContent = char;
-      fragment.appendChild(span);
-      return span;
-    });
+  let currentText = null;
+  let pendingTimeouts = [];
 
-    // Single atomic swap, only now that every span was built without
-    // error. .is-typing is what css/style.css's `.is-typing .typing-char`
-    // rule hides on — adding it only here, after the fragment is
-    // already fully attached, means there is no intermediate state
-    // where some characters exist and others don't.
-    target.textContent = "";
-    target.appendChild(fragment);
-    target.classList.add("is-typing");
-
-    let finished = false;
-    function finish() {
-      if (finished) return;
-      finished = true;
-      spans.forEach((span) => span.classList.add("is-revealed"));
-      target.classList.remove("is-typing");
-    }
-
-    let index = 0;
-    function revealNext() {
-      if (index >= spans.length) {
-        finish();
-        return;
-      }
-      spans[index].classList.add("is-revealed");
-      index += 1;
-      window.setTimeout(revealNext, TYPING_INTERVAL_MS);
-    }
-    revealNext();
-
-    // Failsafe: even if the per-character timer chain above stalls or
-    // throws partway (a bug in this loop, not just the setup above),
-    // this unconditionally reveals every remaining letter and cleans up
-    // .is-typing shortly after the animation should have finished —
-    // the exact "previous bug" scenario (text stuck invisible) this was
-    // written to rule out.
-    window.setTimeout(finish, spans.length * TYPING_INTERVAL_MS + 500);
-  } catch (error) {
-    // Setup failed before the atomic swap above — `target` was never
-    // touched, so the original plain text is still there, untouched and
-    // fully visible.
+  function clearPending() {
+    pendingTimeouts.forEach((id) => window.clearTimeout(id));
+    pendingTimeouts = [];
   }
+
+  function typeBrandName(text) {
+    if (typeof text !== "string" || !text.trim()) return;
+    // Same text already showing (typed, mid-type, or set plainly) —
+    // nothing to do. Without this, content.js handing off the exact
+    // same static-placeholder text it already read from this same
+    // element would still restart the whole animation from scratch for
+    // no visible reason.
+    if (text === currentText) return;
+    currentText = text;
+    clearPending();
+
+    if (prefersReducedMotion) {
+      target.textContent = text;
+      target.classList.remove("is-typing");
+      return;
+    }
+
+    try {
+      // Built into a detached fragment first, not the live element — if
+      // anything here throws partway through, `target` has not been
+      // touched at all yet, so it's still showing whatever full,
+      // complete text it had before this call.
+      const fragment = document.createDocumentFragment();
+      const spans = Array.from(text).map((char) => {
+        const span = document.createElement("span");
+        span.className = "typing-char";
+        span.textContent = char;
+        fragment.appendChild(span);
+        return span;
+      });
+
+      // Single atomic swap, only now that every span was built without
+      // error. .is-typing is what css/style.css's `.is-typing .typing-char`
+      // rule hides on — adding it only here, after the fragment is
+      // already fully attached, means there is no intermediate state
+      // where some characters exist and others don't.
+      target.textContent = "";
+      target.appendChild(fragment);
+      target.classList.add("is-typing");
+
+      let finished = false;
+      function finish() {
+        if (finished) return;
+        finished = true;
+        spans.forEach((span) => span.classList.add("is-revealed"));
+        target.classList.remove("is-typing");
+      }
+
+      let index = 0;
+      function revealNext() {
+        if (index >= spans.length) {
+          finish();
+          return;
+        }
+        spans[index].classList.add("is-revealed");
+        index += 1;
+        pendingTimeouts.push(window.setTimeout(revealNext, TYPING_INTERVAL_MS));
+      }
+      revealNext();
+
+      // Failsafe: even if the per-character timer chain above stalls or
+      // throws partway (a bug in this loop, not just the setup above),
+      // this unconditionally reveals every remaining letter and cleans
+      // up .is-typing shortly after the animation should have finished
+      // — the exact "previous bug" scenario (text stuck invisible) this
+      // was written to rule out.
+      pendingTimeouts.push(window.setTimeout(finish, spans.length * TYPING_INTERVAL_MS + 500));
+    } catch (error) {
+      // Setup failed before the atomic swap above — `target` was never
+      // touched, so its previous full text is still there, untouched
+      // and fully visible.
+    }
+  }
+
+  window.__typeBrandName = typeBrandName;
+  typeBrandName(target.textContent);
 })();
 
 // Scroll reveals: sections fade up (.reveal) and product/drop images

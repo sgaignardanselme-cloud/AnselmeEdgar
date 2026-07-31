@@ -36,7 +36,24 @@
     // Plain text only — safe by construction, no HTML is ever parsed here.
     document.querySelectorAll("[data-cms]").forEach((el) => {
       const value = resolve(el.dataset.cms, settings);
-      if (typeof value === "string" && value) el.textContent = value;
+      if (typeof value !== "string" || !value) return;
+
+      // The brand name (index.html's opening signature) runs a
+      // letter-by-letter typing reveal — see js/script.js. A blind
+      // `el.textContent = value` here would silently blow away that
+      // reveal's <span> structure the instant this settings fetch
+      // resolves (typically a handful of milliseconds for a same-origin
+      // JSON file, i.e. well before the animation gets anywhere), which
+      // is what made it look like the effect never ran at all. Handing
+      // the value to its controller instead lets it decide how to
+      // apply the text; it also already no-ops if the value hasn't
+      // actually changed.
+      if (el.hasAttribute("data-typing-name") && typeof window.__typeBrandName === "function") {
+        window.__typeBrandName(value);
+        return;
+      }
+
+      el.textContent = value;
     });
 
     // The one field (hero headline) that supports an explicit line break.
