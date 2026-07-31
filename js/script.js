@@ -237,12 +237,88 @@ function showToast(message) {
   }, 2200);
 }
 
+// Brand name typing reveal (index.html's opening signature, [data-typing-name]):
+// letters appear one at a time rather than the name showing up all at
+// once. Deliberately built so a script error can never leave the name
+// blank — see the "commit only after everything succeeded" comment
+// below and the failsafe timeout, both added after a previous bug where
+// a reveal effect that rebuilt its own text from an empty string could
+// get stuck showing nothing.
+(() => {
+  const target = document.querySelector("[data-typing-name]");
+  if (!target) return;
+
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // The full name is already sitting in the DOM as plain text (either
+  // the static placeholder or, if content.js's CMS fetch already won
+  // the race, the real brand name) — this only ever reads it, never
+  // clears it up front. No JS at all, or reduced-motion, and this plain
+  // text is simply what stays on screen; nothing to do here.
+  const fullText = target.textContent;
+  if (prefersReducedMotion || !fullText || !fullText.trim()) return;
+
+  const TYPING_INTERVAL_MS = 170; // within the requested ~150-200ms range
+
+  try {
+    // Built into a detached fragment first, not the live element — if
+    // anything here throws partway through, `target` has not been
+    // touched at all yet, so it's still showing its original, complete,
+    // fully-visible text exactly as if this script had never run.
+    const fragment = document.createDocumentFragment();
+    const spans = Array.from(fullText).map((char) => {
+      const span = document.createElement("span");
+      span.className = "typing-char";
+      span.textContent = char;
+      fragment.appendChild(span);
+      return span;
+    });
+
+    // Single atomic swap, only now that every span was built without
+    // error. .is-typing is what css/style.css's `.is-typing .typing-char`
+    // rule hides on — adding it only here, after the fragment is
+    // already fully attached, means there is no intermediate state
+    // where some characters exist and others don't.
+    target.textContent = "";
+    target.appendChild(fragment);
+    target.classList.add("is-typing");
+
+    let finished = false;
+    function finish() {
+      if (finished) return;
+      finished = true;
+      spans.forEach((span) => span.classList.add("is-revealed"));
+      target.classList.remove("is-typing");
+    }
+
+    let index = 0;
+    function revealNext() {
+      if (index >= spans.length) {
+        finish();
+        return;
+      }
+      spans[index].classList.add("is-revealed");
+      index += 1;
+      window.setTimeout(revealNext, TYPING_INTERVAL_MS);
+    }
+    revealNext();
+
+    // Failsafe: even if the per-character timer chain above stalls or
+    // throws partway (a bug in this loop, not just the setup above),
+    // this unconditionally reveals every remaining letter and cleans up
+    // .is-typing shortly after the animation should have finished —
+    // the exact "previous bug" scenario (text stuck invisible) this was
+    // written to rule out.
+    window.setTimeout(finish, spans.length * TYPING_INTERVAL_MS + 500);
+  } catch (error) {
+    // Setup failed before the atomic swap above — `target` was never
+    // touched, so the original plain text is still there, untouched and
+    // fully visible.
+  }
+})();
+
 // Scroll reveals: sections fade up (.reveal) and product/drop images
 // slide their curtain away (.curtain) the first time they enter the
-// viewport. Runs once per element, then stops observing it. (The
-// opening signature has its own plain CSS animation — see .signature-reveal
-// in css/style.css — since it's always visible at load and doesn't need
-// scroll-triggering.)
+// viewport. Runs once per element, then stops observing it.
 (() => {
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const targets = document.querySelectorAll(".reveal, .curtain");

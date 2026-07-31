@@ -883,35 +883,29 @@ body.menu-open .cart-btn {
   color: var(--text);
 }
 
-/* Default: fully visible — a no-JS visitor just sees the name, no
-   dependency on any script to reveal it. */
-.signature-reveal {
+/* Letter-by-letter reveal for the brand name (see the "Brand name typing
+   reveal" IIFE in js/script.js). [data-typing-name]'s full text is
+   always present as a plain text node from the static HTML — JS wraps
+   each character in its own .typing-char span and only THEN adds
+   .is-typing to the container, which is what this rule hides on. That
+   ordering means: no-JS, a fetch/script error before that point, or the
+   reveal loop itself getting stuck all leave the element showing plain,
+   fully-visible text — this rule can only ever hide characters that are
+   already confirmed successfully wrapped and about to be revealed on a
+   timer (with its own failsafe, see script.js). Scoped to .is-typing
+   specifically rather than a bare `.typing-char { opacity: 0 }` for
+   exactly that reason. */
+.is-typing .typing-char {
+  opacity: 0;
+}
+
+.is-typing .typing-char.is-revealed {
   opacity: 1;
-}
-
-/* TEMPORARY (per request): a plain autoplaying fade, verified working
-   before trying a fancier effect again. Deliberately a plain CSS
-   `animation` (not a JS-toggled `.is-visible` class via
-   IntersectionObserver) — this section is the very first thing on the
-   page, always visible at scroll position 0, so it doesn't need
-   scroll-triggering at all, and a self-playing animation can never get
-   stuck at opacity: 0 the way a class waiting on a script/observer can. */
-html.js .signature-reveal {
-  animation: signature-fade-in 1s ease forwards;
-}
-
-@keyframes signature-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  transition: opacity 0.15s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html.js .signature-reveal {
-    animation: none;
+  .is-typing .typing-char {
     opacity: 1;
   }
 }
