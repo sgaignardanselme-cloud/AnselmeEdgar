@@ -1,74 +1,15 @@
 import { ShaderGradientCanvas, ShaderGradient } from '@shadergradient/react';
 
-// Three settings presets. "animated" and "static" are the exact exports
-// from the shadergradient.co editor — kept as-is rather than re-tuned.
-// Only the props listed per variant below actually differ; everything
-// else is shared.
-// - "animated": the original moving background (index.html's hero/scroll,
-//   desktop/tablet).
-// - "animated-light": same look and still genuinely animated, but with
-//   the actually-expensive knobs turned down for phones — lower
-//   pixelDensity (fewer pixels shaded per frame), lower frameRate, a
-//   simpler geometry (`type: 'plane'` instead of `'waterPlane'`), and
-//   lower uStrength/uFrequency (less displacement detail to compute) —
-//   before ever reaching for turning the animation off outright.
-// - "static": a still frame for produit.html/panier.html, so the shader
-//   isn't competing for attention with the size/quantity controls or the
-//   cart list on those pages. Also what "animated" falls back to when
-//   the OS-level prefers-reduced-motion is set, regardless of screen size.
-const VARIANTS = {
-  animated: {
-    animate: 'on',
-    color1: '#249cff',
-    color2: '#1cb8db',
-    color3: '#3b91e1',
-    type: 'waterPlane',
-    uStrength: 4.1,
-    uFrequency: 5.5,
-    pixelDensity: 1,
-    frameRate: 10,
-  },
-  'animated-light': {
-    animate: 'on',
-    color1: '#249cff',
-    color2: '#1cb8db',
-    color3: '#3b91e1',
-    type: 'plane',
-    uStrength: 3,
-    uFrequency: 4.5,
-    pixelDensity: 0.75,
-    frameRate: 8,
-  },
-  static: {
-    animate: 'off',
-    color1: '#30c4ff',
-    color2: '#1f73db',
-    color3: '#2d6ce1',
-    type: 'plane',
-    uStrength: 4,
-    uFrequency: 5.5,
-    pixelDensity: 1,
-    frameRate: 10,
-  },
-  // Site-menu drawer background — exact settings supplied for this
-  // specific panel (different palette from the other three variants).
-  // Static by design, not just by prefers-reduced-motion fallback.
-  menu: {
-    animate: 'off',
-    color1: '#2d26ff',
-    color2: '#35c2db',
-    color3: '#20cae1',
-    type: 'plane',
-    uStrength: 4,
-    uFrequency: 5.5,
-    pixelDensity: 1,
-    frameRate: 10,
-  },
-};
-
-export default function ShaderBackground({ variant = 'animated' }) {
-  const settings = VARIANTS[variant] ?? VARIANTS.animated;
-
+// One shared config, used identically everywhere this mounts — index.html's
+// main background, the site-menu drawer's own background, and produit/
+// panier/confirmation's main background all render the exact same still
+// gradient now (see main.jsx). animate is "off", so there's no more
+// per-page "animated vs static" or prefers-reduced-motion branching to do:
+// every mount is already a still frame. pixelDensity is the one knob that
+// still varies by caller — see main.jsx's mobile/desktop split — because
+// at the requested value (2.5) it's the single most expensive part of this
+// shader to render on a phone.
+export default function ShaderBackground({ pixelDensity = 2.5 }) {
   return (
     // `position: absolute` here, not 'fixed': the actual fixed layer —
     // sized against the real dynamic viewport (vh → svh → dvh fallback
@@ -81,26 +22,26 @@ export default function ShaderBackground({ variant = 'animated' }) {
     // that entirely.
     <ShaderGradientCanvas pointerEvents="none" style={{ position: 'absolute', inset: 0 }}>
       <ShaderGradient
-        animate={settings.animate}
+        animate="off"
         axesHelper="off"
         brightness={1.2}
         cAzimuthAngle={180}
         cDistance={3.6}
         cPolarAngle={90}
         cameraZoom={1}
-        color1={settings.color1}
-        color2={settings.color2}
-        color3={settings.color3}
+        color1="#1751ff"
+        color2="#3598db"
+        color3="#07a0e1"
         destination="onCanvas"
         embedMode="off"
         envPreset="city"
         format="gif"
         fov={45}
-        frameRate={settings.frameRate}
+        frameRate={10}
         gizmoHelper="hide"
         grain="on"
         lightType="3d"
-        pixelDensity={settings.pixelDensity}
+        pixelDensity={pixelDensity}
         positionX={-1.4}
         positionY={0}
         positionZ={0}
@@ -112,12 +53,12 @@ export default function ShaderBackground({ variant = 'animated' }) {
         rotationY={10}
         rotationZ={50}
         shader="defaults"
-        type={settings.type}
+        type="plane"
         uAmplitude={1}
         uDensity={1.3}
-        uFrequency={settings.uFrequency}
+        uFrequency={5.5}
         uSpeed={0.4}
-        uStrength={settings.uStrength}
+        uStrength={4}
         uTime={0}
         wireframe={false}
       />
