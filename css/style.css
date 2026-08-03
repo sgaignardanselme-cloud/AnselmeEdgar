@@ -3297,3 +3297,256 @@ html.js .flip-value.is-flipping {
     transform: none;
   }
 }
+
+/* ---------- Accès équipe discret (entree.html) ---------- */
+/* entree.html montre maintenant l'inscription "liste d'attente" comme
+   contenu principal (voir .waitlist-hero) — ce petit contrôle en bas à
+   droite est la SEULE façon de faire apparaître le champ mot de passe
+   et débloquer le reste du site (voir js/site-lock.js). Volontairement
+   discret : petit, peu contrasté, texte/icône neutres ("Accès privé"),
+   aucune autre mention du mot de passe nulle part sur la page. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.gate-secret {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gate-secret-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 8px;
+  color: rgba(255, 255, 255, 0.35);
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.gate-secret-trigger:hover,
+.gate-secret-trigger[aria-expanded="true"] {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.gate-secret-form {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 8px 12px 8px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--radius-sm);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.gate-secret-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.gate-secret-form input[type="password"] {
+  width: 130px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  outline: none;
+}
+
+.gate-secret-form input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.gate-secret-form button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.14);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  cursor: pointer;
+}
+
+.gate-secret-form button:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* "Rester connecté" — décoché par défaut : sans cette case, le
+   déblocage ne survit qu'à la navigation normale (sessionStorage), pas
+   à un rechargement de page (voir js/site-lock.js). */
+.gate-secret-remember {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+}
+
+.gate-secret-remember input {
+  width: 12px;
+  height: 12px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.gate-secret-error {
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  margin-bottom: 8px;
+  padding: 4px 10px;
+  white-space: nowrap;
+  font-size: 0.7rem;
+  color: #fff;
+  background: rgba(180, 40, 40, 0.85);
+  border-radius: var(--radius-sm);
+}
+
+/* ---------- Liste d'attente (faisceaux + formulaire) ---------- */
+
+/* Thème sombre autonome pour cette page — délibérément pas .scrollytelling
+   (qui suppose la présence du vrai ShaderGradient/de tout son appareil
+   iOS-overscroll) : cette page n'a que l'effet de faisceaux SVG plus bas
+   comme fond, pas de canvas WebGL. --text-rgb en blanc fait passer
+   .section-label/.section-text/.form-note/.site-footer en clair via les
+   tokens --text* existants ; les overrides explicites juste après font
+   la même chose en dur, pour la même raison qu'ailleurs sur le site (un
+   passage précédent a montré que la seule cascade de variables ne
+   suffisait pas toujours à garantir un texte clair fiable). */
+html.waitlist-page,
+body.waitlist-page {
+  background: #071b33;
+}
+
+body.waitlist-page {
+  --text-rgb: 255, 255, 255;
+  color: var(--text);
+}
+
+.waitlist-page .section-label,
+.waitlist-page .section-title {
+  color: #fff;
+}
+
+.waitlist-page .section-text,
+.waitlist-page .form-note,
+.waitlist-page .form-field label,
+.waitlist-page .site-footer,
+.waitlist-page .footer-nav a {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.waitlist-page .footer-brand-name {
+  color: #fff;
+}
+
+.waitlist-hero {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 96px 20px 48px;
+  background: radial-gradient(120% 90% at 50% 0%, #0d2b52 0%, #071b33 55%, #05132b 100%);
+}
+
+.waitlist-hero-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.waitlist-hero-content .section-text {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.waitlist-card {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  margin-top: 12px;
+  padding: 28px 24px;
+  text-align: left;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.waitlist-card .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Faisceaux : reproduit le composant de référence (chemins SVG courbes,
+   dégradé animé le long du trait) en SMIL plutôt qu'en boucle JS — voir
+   le commentaire dans liste-attente.html. Couleurs bleu/teal du site
+   (mêmes hex que le ShaderGradient principal) à la place du cyan/violet
+   du composant d'origine. */
+.beams-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.beam-path {
+  fill: none;
+  stroke-width: 0.7;
+  stroke-opacity: 0.5;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Réduit le nombre de traits animés sur petit écran (une préoccupation
+   de perf mobile explicitement demandée) — un trait sur deux disparaît
+   simplement, le dégradé animé qui l'habillait s'arrête avec lui. */
+@media (max-width: 640px) {
+  .beam-path:nth-child(even) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .beam-path {
+    stroke-opacity: 0.3;
+  }
+}

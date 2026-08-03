@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="fr" class="waitlist-page">
+<head>
+  <meta charset="UTF-8" />
+  <script src="js/site-lock.js"></script>
+  <script>document.documentElement.classList.add('js');if('scrollRestoration' in history){history.scrollRestoration='manual';}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#071b33" />
+  <!-- Placeholder favicon — voir le même commentaire dans index.html. -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='7' y='7' width='18' height='18' rx='4' fill='%232d6ce1' transform='rotate(45 16 16)'/%3E%3C/svg%3E" />
+  <title>Liste d'attente — [NOM DE LA MARQUE]</title>
+  <meta name="description" content="Inscris-toi à la liste d'attente pour être prévenu·e dès l'ouverture des ventes du prochain drop." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Liste d'attente — [NOM DE LA MARQUE]" />
+  <meta property="og:description" content="Inscris-toi à la liste d'attente pour être prévenu·e dès l'ouverture des ventes du prochain drop." />
+  <meta property="og:image" content="[À REMPLACER — URL absolue du visuel hero/drop]" />
+  <meta property="og:url" content="[À REMPLACER — URL du site]/liste-attente.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Liste d'attente — [NOM DE LA MARQUE]" />
+  <meta name="twitter:description" content="Inscris-toi à la liste d'attente pour être prévenu·e dès l'ouverture des ventes du prochain drop." />
+  <meta name="twitter:image" content="[À REMPLACER — URL absolue du visuel hero/drop]" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <link rel="preload" as="style" href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap" rel="stylesheet" />
+  </noscript>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="waitlist-page">
+
+  <!-- Liquid-glass SVG filter for the .btn backdrop-filter effect — see
+       the same block in index.html for the full explanation. -->
+  <svg width="0" height="0" style="position:absolute;overflow:hidden;" aria-hidden="true" focusable="false">
+    <defs>
+      <filter id="btn-liquid-glass-light" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.024" numOctaves="2" seed="7" result="noise" />
+        <feGaussianBlur in="noise" stdDeviation="2" result="softNoise" />
+        <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="8" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+        <feGaussianBlur in="displaced" stdDeviation="3" />
+      </filter>
+      <filter id="btn-liquid-glass" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.024" numOctaves="2" seed="7" result="noise" />
+        <feGaussianBlur in="noise" stdDeviation="3" result="softNoise" />
+        <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="20" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+        <feGaussianBlur in="displaced" stdDeviation="4" />
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="floating-nav">
+    <a href="index.html" class="floating-logo" data-cms="general.brand_name">[NOM MARQUE]</a>
+    <div class="nav-actions">
+      <a href="panier.html" class="cart-btn" data-cart-btn aria-label="Panier">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 8h12l-1 12H7L6 8Z" />
+          <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+        </svg>
+        <span class="cart-badge" data-cart-badge hidden>0</span>
+      </a>
+      <button class="hamburger-btn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="site-menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="site-menu-backdrop" data-menu-backdrop></div>
+  <div class="site-menu" id="site-menu">
+    <!-- Pas de ShaderGradient ici : cette page ne charge pas
+         js/shader-bg.bundle.js (son propre fond est l'effet de faisceaux
+         SVG ci-dessous, pas le shader) — même raisonnement que
+         archives.html. .site-menu-tint fournit quand même le fond sombre
+         nécessaire à la lisibilité du texte. -->
+    <div class="site-menu-tint" aria-hidden="true"></div>
+    <div class="site-menu-content">
+      <div class="site-menu-header">
+        <button type="button" class="site-menu-close" data-menu-close aria-label="Fermer le menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+      </div>
+      <nav class="site-menu-nav">
+        <ul>
+          <li><a href="index.html">Accueil</a></li>
+          <li><a href="index.html#univers">Univers</a></li>
+          <li><a href="index.html#drop">Drop</a></li>
+          <!-- Archives retiré du menu : pas encore de drop passé à archiver
+               (voir archives.html — code gardé intact). -->
+          <li><a href="index.html#contact">Contact</a></li>
+        </ul>
+      </nav>
+      <div class="site-menu-footer">
+        <div class="socials">
+          <a href="#" target="_blank" rel="noopener" data-cms-href="general.instagram_url">Instagram</a>
+          <a href="#" target="_blank" rel="noopener" data-cms-href="general.tiktok_url">TikTok</a>
+        </div>
+        <a href="liste-attente.html" class="btn" data-cms="hero.cta_secondary_label">Rejoindre la liste d'attente</a>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <section class="waitlist-hero">
+      <!-- Faisceaux lumineux animés — adapté du composant de référence
+           React/Framer Motion "BackgroundBeams" (chemins SVG courbes +
+           dégradé animé le long du trait). Reproduit ici en SMIL
+           (<animate> natif au SVG) plutôt qu'en boucle JS
+           requestAnimationFrame : ça tourne sans consommer de temps CPU
+           JS à chaque frame, ce qui compte particulièrement sur mobile
+           (voir la réduction du nombre de traits ci-dessous, et
+           .beam-path:nth-child(even) en dessous de 640px). Fonctionne
+           aussi sans JavaScript — seule la réduction "prefers-reduced-
+           motion" (voir le script en bas de page) en dépend. -->
+      <svg
+        class="beams-svg"
+        data-beams-svg
+        viewBox="0 0 696 316"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path class="beam-path" d="M-380 -189C-380 -189 -312 216 152 343C616 470 684 875 684 875" stroke="url(#beam-gradient-1)" />
+        <path class="beam-path" d="M-366 -205C-366 -205 -298 200 166 327C630 454 698 859 698 859" stroke="url(#beam-gradient-2)" />
+        <path class="beam-path" d="M-352 -221C-352 -221 -284 184 180 311C644 438 712 843 712 843" stroke="url(#beam-gradient-3)" />
+        <path class="beam-path" d="M-338 -237C-338 -237 -270 168 194 295C658 422 726 827 726 827" stroke="url(#beam-gradient-4)" />
+        <path class="beam-path" d="M-324 -253C-324 -253 -256 152 208 279C672 406 740 811 740 811" stroke="url(#beam-gradient-5)" />
+        <path class="beam-path" d="M-310 -269C-310 -269 -242 136 222 263C686 390 754 795 754 795" stroke="url(#beam-gradient-6)" />
+        <path class="beam-path" d="M-296 -285C-296 -285 -228 120 236 247C700 374 768 779 768 779" stroke="url(#beam-gradient-7)" />
+        <path class="beam-path" d="M-282 -301C-282 -301 -214 104 250 231C714 358 782 763 782 763" stroke="url(#beam-gradient-8)" />
+        <path class="beam-path" d="M-268 -317C-268 -317 -200 88 264 215C728 342 796 747 796 747" stroke="url(#beam-gradient-9)" />
+        <path class="beam-path" d="M-254 -333C-254 -333 -186 72 278 199C742 326 810 731 810 731" stroke="url(#beam-gradient-10)" />
+        <defs>
+          <linearGradient id="beam-gradient-1" x1="0%" x2="0%" y1="0%" y2="0%">
+            <stop offset="0%" stop-color="#1751ff" stop-opacity="0" />
+            <stop offset="30%" stop-color="#07a0e1" stop-opacity="0.9" />
+            <stop offset="65%" stop-color="#3598db" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#1751ff" stop-opacity="0" />
+            <animate attributeName="x1" values="0%;100%" dur="14s" begin="0s" repeatCount="indefinite" />
+            <animate attributeName="x2" values="0%;95%" dur="14s" begin="0s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="0%;100%" dur="14s" begin="0s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="0%;95%" dur="14s" begin="0s" repeatCount="indefinite" />
+          </linearGradient>
+          <linearGradient id="beam-gradient-2" x1="0%" x2="0%" y1="0%" y2="0%">
+            <stop offset="0%" stop-color="#1751ff" stop-opacity="0" />
+            <stop offset="30%" stop-color="#07a0e1" stop-opacity="0.9" />
+            <stop offset="65%" stop-color="#3598db" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#1751ff" stop-opacity="0" />
+            <animate attributeName="x1" values="0%;100%" dur="18s" begin="1.2s" repeatCount="indefinite" />
+            <animate attributeName="x2" values="0%;95%" dur="18s" begin="1.2s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="0%;100%" dur="18s" begin="1.2s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="0%;97%" dur="18s" begin="1.2s" repeatCount="indefinite" />
+          </linearGradient>
+          <linearGradient id="beam-gradient-3" x1="0%" x2="0%" y1="0%" y2="0%">
+            <stop offset="0%" stop-color="#1751ff" stop-opacity="0" />
+            <stop offset="30%" stop-color="#07a0e1" stop-opacity="0.9" />
+            <stop offset="65%" stop-color="#3598db" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#1751ff" stop-opacity="0" />
+            <animate attributeName="x1" values="0%;100%" dur="22s" begin="2.4s" repeatCount="indefinite" />
+            <animate attributeName="x2" values="0%;95%" dur="22s" begin="2.4s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="0%;100%" dur="22s" begin="2.4s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="0%;93%" dur="22s" begin="2.4s" repeatCount="indefinite" />
+          </linearGradient>
+          <linearGradient id="beam-gradient-4" x1="0%" x2="0%" y1="0%" y2="0%">
+            <stop offset="0%" stop-color="#1751ff" stop-opacity="0" />
+            <stop offset="30%" stop-color="#07a0e1" stop-opacity="0.9" />
+            <stop offset="65%" stop-color="#3598db" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#1751ff" stop-opacity="0" />
+            <animate attributeName="x1" values="0%;100%" dur="16s" begin="3.6s" repeatCount="indefinite" />
+            <animate attributeName="x2" values="0%;95%" dur="16s" begin="3.6s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="0%;100%" dur="16s" begin="3.6s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="0%;99%" dur="16s" begin="3.6s" repeatCount="indefinite" />
+          </linearGradient>
+          <linearGradient id="beam-gradient-5" x1="0%" x2="0%" y1="0%" y2="0%">
+            <stop offset="0%" stop-color="#1751ff" stop-opacity="0" />
+            <stop offset="30%" stop-color="#07a0e1" stop-opacity="0.9" />
+            <stop offset="65%" stop-color="#3598db" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#1751ff" stop-opacity="0" />
+            <animate attributeName="x1" values="0%;100%" dur="20s" begin="4.8s" repeatCount="indefinite" />
+            <animate attributeName="x2" values="0%;95%" dur="20s" begin="4.8s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="0%;100%" dur="20s" begin="4.8s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="0%;95%" dur="20s" begin="4.8s" repeatCount="indefinite" />
+          </linearGradient>
+          <linearGradient id="beam-gradient-6" x1="0%" x2="0%" y1="0%" y2="0%">
+            <stop offset="0%" stop-color="#1751ff" stop-opacity="0" />
+            <stop offset="30%" stop-color="#07a0e1" stop-opacity="0.9" />
+            <stop offset="65%" stop-color="#3598db" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#1751ff" stop-opacity="0" />
+            <animate attributeName="x1" values="0%;100%" dur="24s" begin="6s" repeatCount="indefinite" />
+            <animate attributeName="x2" values="0%;95%" dur="24s" begin="6s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="0%;100%" dur="24s" begin="6s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="0%;97%" dur="24s" begin="6s" repeatCount="indefinite" />
+          </linearGradient>
+          <linearGradient id="beam-gradient-7" x1="0%" x2="0%" y1="0%" y2="0%">
+            <stop offset="0%" stop-color="#1751ff" stop-opacity="0" />
+            <stop offset="30%" stop-color="#07a0e1" stop-opacity="0.9" />
+            <stop offset="65%" stop-color="#3598db" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#1751ff" stop-opacity="0" />
+            <animate attributeName="x1" values="0%;100%" dur="15s" begin="7.2s" repeatCount="indefinite" />
+            <animate attributeName="x2" values="0%;95%" dur="15s" begin="7.2s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="0%;100%" dur="15s" begin="7.2s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="0%;93%" dur="15s" begin="7.2s" repeatCount="indefinite" />
+          </linearGradient>
+          <linearGradient id="beam-gradient-8" x1="0%" x2="0%" y1="0%" y2="0%">
+            <stop offset="0%" stop-color="#1751ff" stop-opacity="0" />
+            <stop offset="30%" stop-color="#07a0e1" stop-opacity="0.9" />
+            <stop offset="65%" stop-color="#3598db" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#1751ff" stop-opacity="0" />
+            <animate attributeName="x1" values="0%;100%" dur="19s" begin="8.4s" repeatCount="indefinite" />
+            <animate attributeName="x2" values="0%;95%" dur="19s" begin="8.4s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="0%;100%" dur="19s" begin="8.4s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="0%;99%" dur="19s" begin="8.4s" repeatCount="indefinite" />
+          </linearGradient>
+          <linearGradient id="beam-gradient-9" x1="0%" x2="0%" y1="0%" y2="0%">
+            <stop offset="0%" stop-color="#1751ff" stop-opacity="0" />
+            <stop offset="30%" stop-color="#07a0e1" stop-opacity="0.9" />
+            <stop offset="65%" stop-color="#3598db" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#1751ff" stop-opacity="0" />
+            <animate attributeName="x1" values="0%;100%" dur="23s" begin="9.6s" repeatCount="indefinite" />
+            <animate attributeName="x2" values="0%;95%" dur="23s" begin="9.6s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="0%;100%" dur="23s" begin="9.6s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="0%;95%" dur="23s" begin="9.6s" repeatCount="indefinite" />
+          </linearGradient>
+          <linearGradient id="beam-gradient-10" x1="0%" x2="0%" y1="0%" y2="0%">
+            <stop offset="0%" stop-color="#1751ff" stop-opacity="0" />
+            <stop offset="30%" stop-color="#07a0e1" stop-opacity="0.9" />
+            <stop offset="65%" stop-color="#3598db" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#1751ff" stop-opacity="0" />
+            <animate attributeName="x1" values="0%;100%" dur="17s" begin="10.8s" repeatCount="indefinite" />
+            <animate attributeName="x2" values="0%;95%" dur="17s" begin="10.8s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="0%;100%" dur="17s" begin="10.8s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="0%;97%" dur="17s" begin="10.8s" repeatCount="indefinite" />
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <div class="container waitlist-hero-content">
+        <p class="section-label">Liste d'attente</p>
+        <h1 class="section-title" data-cms="drop.waitlist_title">Ne rate pas la sortie</h1>
+        <p class="section-text" data-cms="drop.waitlist_text">
+          [PLACEHOLDER] Rejoins la liste d'attente pour être prévenu·e dès
+          l'ouverture des ventes.
+        </p>
+
+        <div class="waitlist-card">
+          <!--
+            [PLACEHOLDER FORMULAIRE]
+            Remplacer "action" par ton endpoint Formspree
+            (https://formspree.io) une fois le compte créé,
+            ex: https://formspree.io/f/xxxxxxx
+            Alternative : remplacer tout le <form> par un embed Mailchimp.
+          -->
+          <form action="https://formspree.io/f/REMPLACER_PAR_VOTRE_ID" method="POST">
+            <div class="form-field">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" placeholder="ton@email.com" required />
+            </div>
+            <div class="form-field">
+              <label for="reseau">Réseau préféré (optionnel)</label>
+              <select id="reseau" name="reseau">
+                <option value="">Sélectionner...</option>
+                <option value="instagram">Instagram</option>
+                <option value="tiktok">TikTok</option>
+                <option value="email">Email</option>
+              </select>
+            </div>
+            <button type="submit" class="btn">S'inscrire à la liste d'attente</button>
+            <p class="form-note" data-cms="contact.form_note">
+              [PLACEHOLDER] En t'inscrivant, tu acceptes de recevoir des
+              emails de [NOM DE LA MARQUE]. Aucun spam, promis.
+            </p>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-links-row">
+      <p class="footer-brand-name" data-cms="general.brand_name">[NOM DE LA MARQUE]</p>
+      <nav class="footer-nav" aria-label="Réseaux sociaux et informations">
+        <a href="#" target="_blank" rel="noopener" data-cms-href="general.instagram_url">Instagram</a>
+        <a href="#" target="_blank" rel="noopener" data-cms-href="general.tiktok_url">TikTok</a>
+        <a href="mentions-legales.html">Mentions légales</a>
+      </nav>
+    </div>
+    <div class="container">
+      <p>&copy; <span data-current-year>2026</span> <span data-cms="general.brand_name">[NOM DE LA MARQUE]</span>. Tous droits réservés.</p>
+      <p data-cms="general.footer_legal">[PLACEHOLDER — statut juridique / mention légale à venir]</p>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+  <script src="js/content.js"></script>
+  <script>
+    // Les <animate> SMIL ne suivent pas prefers-reduced-motion tout
+    // seuls (contrairement aux animations CSS) — pauseAnimations() sur
+    // l'élément racine du SVG les fige toutes d'un coup, sans avoir à
+    // les retirer une par une.
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      var beamsSvg = document.querySelector("[data-beams-svg]");
+      if (beamsSvg && typeof beamsSvg.pauseAnimations === "function") {
+        beamsSvg.pauseAnimations();
+      }
+    }
+  </script>
+</body>
+</html>

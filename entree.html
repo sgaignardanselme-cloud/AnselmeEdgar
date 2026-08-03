@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="fr" class="waitlist-page">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Doit être le tout premier script de CHAQUE page du site — voir
+       js/site-lock.js. Sur cette page précise (l'écran d'entrée
+       lui-même), il ne fait rien d'autre que fournir SITE_LOCK_PASSWORD/
+       SITE_LOCK_STORAGE_KEY au petit formulaire caché plus bas : son
+       propre garde-fou de redirection se désactive tout seul ici (voir
+       la vérification "here === SITE_LOCK_GATE_PAGE"). -->
+  <script src="js/site-lock.js"></script>
+  <script>document.documentElement.classList.add('js');if('scrollRestoration' in history){history.scrollRestoration='manual';}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#071b33" />
+  <!-- Cette page reste hors indexation : c'est la cible technique de la
+       redirection du garde-fou (voir js/site-lock.js), pas l'URL qu'on
+       veut voir partagée ou indexée — liste-attente.html (contenu
+       quasi identique) est la page canonique pour ça. -->
+  <meta name="robots" content="noindex, nofollow" />
+  <!-- Placeholder favicon — voir le même commentaire dans index.html. -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='7' y='7' width='18' height='18' rx='4' fill='%232d6ce1' transform='rotate(45 16 16)'/%3E%3C/svg%3E" />
+  <title>Liste d'attente — [NOM DE LA MARQUE]</title>
+  <meta name="description" content="Inscris-toi à la liste d'attente pour être prévenu·e dès l'ouverture des ventes du prochain drop." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <link rel="preload" as="style" href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap" rel="stylesheet" />
+  </noscript>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="waitlist-page">
+
+  <!-- Liquid-glass SVG filter for the .btn backdrop-filter effect — see
+       the same block in index.html for the full explanation. -->
+  <svg width="0" height="0" style="position:absolute;overflow:hidden;" aria-hidden="true" focusable="false">
+    <defs>
+      <filter id="btn-liquid-glass-light" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.024" numOctaves="2" seed="7" result="noise" />
+        <feGaussianBlur in="noise" stdDeviation="2" result="softNoise" />
+        <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="8" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+        <feGaussianBlur in="displaced" stdDeviation="3" />
+      </filter>
+      <filter id="btn-liquid-glass" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.012 0.024" numOctaves="2" seed="7" result="noise" />
+        <feGaussianBlur in="noise" stdDeviation="3" result="softNoise" />
+        <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="20" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+        <feGaussianBlur in="displaced" stdDeviation="4" />
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- Pas de header/menu/panier ici : rien à quoi naviguer avant d'avoir
+       débloqué l'accès complet (voir le lien discret en bas à droite). -->
+  <main>
+    <section class="waitlist-hero">
+      <!-- Mêmes faisceaux animés que liste-attente.html — voir ce fichier
+           pour le commentaire complet sur la technique (SMIL plutôt que
+           boucle JS) et la réduction du nombre de traits sur mobile. -->
+      <svg
+        class="beams-svg"
+        data-beams-svg
+        viewBox="0 0 696 316"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path class="beam-path" d="M-380 -189C-380 -189 -312 216 152 343C616 470 684 875 684 875" stroke="url(#beam-gradient-1)" />
+        <path class="beam-path" d="M-366 -205C-366 -205 -298 200 166 327C630 454 698 859 698 859" stroke="url(#beam-gradient-2)" />
+        <path class="beam-path" d="M-352 -221C-352 -221 -284 184 180 311C644 438 712 843 712 843" stroke="url(#beam-gradient-3)" />
+        <path class="beam-path" d="M-338 -237C-338 -237 -270 168 194 295C658 422 726 827 726 827" stroke="url(#beam-gradient-4)" />
+        <path class="beam-path" d="M-324 -253C-324 -253 -256 152 208 279C672 406 740 811 740 811" stroke="url(#beam-gradient-5)" />
+        <path class="beam-path" d="M-310 -269C-310 -269 -242 136 222 263C686 390 754 795 754 795" stroke="url(#beam-gradient-6)" />
+        <path class="beam-path" d="M-296 -285C-296 -285 -228 120 236 247C700 374 768 779 768 779" stroke="url(#beam-gradient-7)" />
+        <path class="beam-path" d="M-282 -301C-282 -301 -214 104 250 231C714 358 782 763 782 763" stroke="url(#beam-gradient-8)" />
+        <path class="beam-path" d="M-268 -317C-268 -317 -200 88 264 215C728 342 796 747 796 747" stroke="url(#beam-gradient-9)" />
+        <path class="beam-path" d="M-254 -333C-254 -333 -186 72 278 199C742 326 810 731 810 731" stroke="url(#beam-gradient-10)" />
+        <defs>
+          <linearGradient id="beam-gradient-1" x1="0%" x2="0%" y1="0%" y2="0%">
+            <stop offset="0%" stop-color="#1751ff" stop-opacity="0" />
+            <stop offset="30%" stop-color="#07a0e1" stop-opacity="0.9" />
+            <stop offset="65%" stop-color="#3598db" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#1751ff" stop-opacity="0" />
+            <animate attributeName="x1" values="0%;100%" dur="14s" begin="0s" repeatCount="indefinite" />
+            <animate attributeName="x2" values="0%;95%" dur="14s" begin="0s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="0%;100%" dur="14s" begin="0s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="0%;95%" dur="14s" begin="0s" repeatCount="indefinite" />
+          </linearGradient>
+          <linearGradient id="beam-gradient-2" x1="0%" x2="0%" y1="0%" y2="0%">
+            <stop offset="0%" stop-color="#1751ff" stop-opacity="0" />
+            <stop offset="30%" stop-color="#07a0e1" stop-opacity="0.9" />
+            <stop offset="65%" stop-color="#3598db" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#1751ff" stop-opacity="0" />
+            <animate attributeName="x1" values="0%;100%" dur="18s" begin="1.2s" repeatCount="indefinite" />
+            <animate attributeName="x2" values="0%;95%" dur="18s" begin="1.2s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="0%;100%" dur="18s" begin="1.2s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="0%;97%" dur="18s" begin="1.2s" repeatCount="indefinite" />
+          </linearGradient>
+          <linearGradient id="beam-gradient-3" x1="0%" x2="0%" y1="0%" y2="0%">
+            <stop offset="0%" stop-color="#1751ff" stop-opacity="0" />
+            <stop offset="30%" stop-color="#07a0e1" stop-opacity="0.9" />
+            <stop offset="65%" stop-color="#3598db" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#1751ff" stop-opacity="0" />
+            <animate attributeName="x1" values="0%;100%" dur="22s" begin="2.4s" repeatCount="indefinite" />
+            <animate attributeName="x2" values="0%;95%" dur="22s" begin="2.4s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="0%;100%" dur="22s" begin="2.4s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="0%;93%" dur="22s" begin="2.4s" repeatCount="indefinite" />
+          </linearGradient>
+          <linearGradient id="beam-gradient-4" x1="0%" x2="0%" y1="0%" y2="0%">
+            <stop offset="0%" stop-color="#1751ff" stop-opacity="0" />
+            <stop offset="30%" stop-color="#07a0e1" stop-opacity="0.9" />
+            <stop offset="65%" stop-color="#3598db" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#1751ff" stop-opacity="0" />
+            <animate attributeName="x1" values="0%;100%" dur="16s" begin="3.6s" repeatCount="indefinite" />
+            <animate attributeName="x2" values="0%;95%" dur="16s" begin="3.6s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="0%;100%" dur="16s" begin="3.6s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="0%;99%" dur="16s" begin="3.6s" repeatCount="indefinite" />
+          </linearGradient>
+          <linearGradient id="beam-gradient-5" x1="0%" x2="0%" y1="0%" y2="0%">
+            <stop offset="0%" stop-color="#1751ff" stop-opacity="0" />
+            <stop offset="30%" stop-color="#07a0e1" stop-opacity="0.9" />
+            <stop offset="65%" stop-color="#3598db" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#1751ff" stop-opacity="0" />
+            <animate attributeName="x1" values="0%;100%" dur="20s" begin="4.8s" repeatCount="indefinite" />
+            <animate attributeName="x2" values="0%;95%" dur="20s" begin="4.8s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="0%;100%" dur="20s" begin="4.8s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="0%;95%" dur="20s" begin="4.8s" repeatCount="indefinite" />
+          </linearGradient>
+          <linearGradient id="beam-gradient-6" x1="0%" x2="0%" y1="0%" y2="0%">
+            <stop offset="0%" stop-color="#1751ff" stop-opacity="0" />
+            <stop offset="30%" stop-color="#07a0e1" stop-opacity="0.9" />
+            <stop offset="65%" stop-color="#3598db" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#1751ff" stop-opacity="0" />
+            <animate attributeName="x1" values="0%;100%" dur="24s" begin="6s" repeatCount="indefinite" />
+            <animate attributeName="x2" values="0%;95%" dur="24s" begin="6s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="0%;100%" dur="24s" begin="6s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="0%;97%" dur="24s" begin="6s" repeatCount="indefinite" />
+          </linearGradient>
+          <linearGradient id="beam-gradient-7" x1="0%" x2="0%" y1="0%" y2="0%">
+            <stop offset="0%" stop-color="#1751ff" stop-opacity="0" />
+            <stop offset="30%" stop-color="#07a0e1" stop-opacity="0.9" />
+            <stop offset="65%" stop-color="#3598db" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#1751ff" stop-opacity="0" />
+            <animate attributeName="x1" values="0%;100%" dur="15s" begin="7.2s" repeatCount="indefinite" />
+            <animate attributeName="x2" values="0%;95%" dur="15s" begin="7.2s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="0%;100%" dur="15s" begin="7.2s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="0%;93%" dur="15s" begin="7.2s" repeatCount="indefinite" />
+          </linearGradient>
+          <linearGradient id="beam-gradient-8" x1="0%" x2="0%" y1="0%" y2="0%">
+            <stop offset="0%" stop-color="#1751ff" stop-opacity="0" />
+            <stop offset="30%" stop-color="#07a0e1" stop-opacity="0.9" />
+            <stop offset="65%" stop-color="#3598db" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#1751ff" stop-opacity="0" />
+            <animate attributeName="x1" values="0%;100%" dur="19s" begin="8.4s" repeatCount="indefinite" />
+            <animate attributeName="x2" values="0%;95%" dur="19s" begin="8.4s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="0%;100%" dur="19s" begin="8.4s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="0%;99%" dur="19s" begin="8.4s" repeatCount="indefinite" />
+          </linearGradient>
+          <linearGradient id="beam-gradient-9" x1="0%" x2="0%" y1="0%" y2="0%">
+            <stop offset="0%" stop-color="#1751ff" stop-opacity="0" />
+            <stop offset="30%" stop-color="#07a0e1" stop-opacity="0.9" />
+            <stop offset="65%" stop-color="#3598db" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#1751ff" stop-opacity="0" />
+            <animate attributeName="x1" values="0%;100%" dur="23s" begin="9.6s" repeatCount="indefinite" />
+            <animate attributeName="x2" values="0%;95%" dur="23s" begin="9.6s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="0%;100%" dur="23s" begin="9.6s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="0%;95%" dur="23s" begin="9.6s" repeatCount="indefinite" />
+          </linearGradient>
+          <linearGradient id="beam-gradient-10" x1="0%" x2="0%" y1="0%" y2="0%">
+            <stop offset="0%" stop-color="#1751ff" stop-opacity="0" />
+            <stop offset="30%" stop-color="#07a0e1" stop-opacity="0.9" />
+            <stop offset="65%" stop-color="#3598db" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#1751ff" stop-opacity="0" />
+            <animate attributeName="x1" values="0%;100%" dur="17s" begin="10.8s" repeatCount="indefinite" />
+            <animate attributeName="x2" values="0%;95%" dur="17s" begin="10.8s" repeatCount="indefinite" />
+            <animate attributeName="y1" values="0%;100%" dur="17s" begin="10.8s" repeatCount="indefinite" />
+            <animate attributeName="y2" values="0%;97%" dur="17s" begin="10.8s" repeatCount="indefinite" />
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <div class="container waitlist-hero-content">
+        <p class="section-label">Liste d'attente</p>
+        <h1 class="section-title" data-cms="drop.waitlist_title">Ne rate pas la sortie</h1>
+        <p class="section-text" data-cms="drop.waitlist_text">
+          [PLACEHOLDER] Rejoins la liste d'attente pour être prévenu·e dès
+          l'ouverture des ventes.
+        </p>
+
+        <div class="waitlist-card">
+          <!-- Même formulaire que liste-attente.html (même endpoint
+               Formspree à configurer) — cet écran EST la première chose
+               qu'un visiteur inconnu voit, donc c'est ici qu'il doit
+               pouvoir s'inscrire, pas seulement sur la page dédiée. -->
+          <form action="https://formspree.io/f/REMPLACER_PAR_VOTRE_ID" method="POST">
+            <div class="form-field">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" placeholder="ton@email.com" required />
+            </div>
+            <div class="form-field">
+              <label for="reseau">Réseau préféré (optionnel)</label>
+              <select id="reseau" name="reseau">
+                <option value="">Sélectionner...</option>
+                <option value="instagram">Instagram</option>
+                <option value="tiktok">TikTok</option>
+                <option value="email">Email</option>
+              </select>
+            </div>
+            <button type="submit" class="btn">S'inscrire à la liste d'attente</button>
+            <p class="form-note" data-cms="contact.form_note">
+              [PLACEHOLDER] En t'inscrivant, tu acceptes de recevoir des
+              emails de [NOM DE LA MARQUE]. Aucun spam, promis.
+            </p>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-links-row">
+      <p class="footer-brand-name" data-cms="general.brand_name">[NOM DE LA MARQUE]</p>
+      <nav class="footer-nav" aria-label="Réseaux sociaux et informations">
+        <a href="#" target="_blank" rel="noopener" data-cms-href="general.instagram_url">Instagram</a>
+        <a href="#" target="_blank" rel="noopener" data-cms-href="general.tiktok_url">TikTok</a>
+        <a href="mentions-legales.html">Mentions légales</a>
+      </nav>
+    </div>
+    <div class="container">
+      <p>&copy; <span data-current-year>2026</span> <span data-cms="general.brand_name">[NOM DE LA MARQUE]</span>. Tous droits réservés.</p>
+      <p data-cms="general.footer_legal">[PLACEHOLDER — statut juridique / mention légale à venir]</p>
+    </div>
+  </footer>
+
+  <!-- Accès équipe, volontairement discret : seul ce contrôle permet de
+       saisir le mot de passe et débloquer le reste du site (voir
+       js/site-lock.js). Rien d'autre sur cette page n'y fait référence —
+       un visiteur qui ne connaît pas déjà son existence ne voit qu'un
+       écran normal d'inscription à la liste d'attente. -->
+  <div class="gate-secret" data-gate-secret>
+    <button
+      type="button"
+      class="gate-secret-trigger"
+      data-gate-secret-trigger
+      aria-expanded="false"
+      aria-controls="gate-secret-form"
+      aria-label="Accès privé"
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="5" y="11" width="14" height="9" rx="2" />
+        <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+      </svg>
+      <span>Accès privé</span>
+    </button>
+    <form id="gate-secret-form" class="gate-secret-form" data-gate-secret-form hidden novalidate>
+      <div class="gate-secret-row">
+        <label for="gate-password" class="sr-only">Mot de passe</label>
+        <input type="password" id="gate-password" name="password" placeholder="Mot de passe" autocomplete="off" />
+        <button type="submit" aria-label="Valider">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </button>
+      </div>
+      <label class="gate-secret-remember">
+        <input type="checkbox" id="gate-remember" />
+        Rester connecté
+      </label>
+      <p class="gate-secret-error" data-gate-error hidden>Incorrect.</p>
+    </form>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script src="js/content.js"></script>
+  <script>
+    // Les <animate> SMIL ne suivent pas prefers-reduced-motion tout
+    // seuls (contrairement aux animations CSS) — pauseAnimations() sur
+    // l'élément racine du SVG les fige toutes d'un coup, sans avoir à
+    // les retirer une par une.
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      var beamsSvg = document.querySelector("[data-beams-svg]");
+      if (beamsSvg && typeof beamsSvg.pauseAnimations === "function") {
+        beamsSvg.pauseAnimations();
+      }
+    }
+  </script>
+  <script>
+    (function () {
+      var trigger = document.querySelector("[data-gate-secret-trigger]");
+      var form = document.querySelector("[data-gate-secret-form]");
+      if (!trigger || !form) return;
+
+      var input = form.querySelector("#gate-password");
+      var rememberCheckbox = form.querySelector("#gate-remember");
+      var errorEl = document.querySelector("[data-gate-error]");
+
+      trigger.addEventListener("click", function () {
+        var willOpen = form.hidden;
+        form.hidden = !willOpen;
+        trigger.setAttribute("aria-expanded", String(willOpen));
+        if (willOpen && input) input.focus();
+      });
+
+      // Uniquement un nom de fichier same-site (+ query/hash optionnels)
+      // — jamais une URL complète ni un chemin avec des slashs. Défense
+      // en profondeur : js/site-lock.js ne construit déjà "next" qu'à
+      // partir d'un nom de fichier, mais on revalide quand même ici avant
+      // de rediriger, au cas où quelqu'un forge directement ce paramètre
+      // dans l'URL d'entree.html.
+      function sanitizeNext(raw) {
+        if (!raw) return "index.html";
+        var decoded;
+        try {
+          decoded = decodeURIComponent(raw);
+        } catch (error) {
+          return "index.html";
+        }
+        return /^[a-zA-Z0-9_-]+\.html(?:[?#].*)?$/.test(decoded) ? decoded : "index.html";
+      }
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        if (input.value === window.SITE_LOCK_PASSWORD) {
+          // "Rester connecté" coché → localStorage (survit à un
+          // rechargement de page, et même à la fermeture du
+          // navigateur). Pas coché → sessionStorage seulement : ça
+          // laisse naviguer normalement d'une page à l'autre, mais
+          // js/site-lock.js redemande le mot de passe au prochain
+          // rechargement de page (voir isReload() là-bas).
+          try {
+            if (rememberCheckbox && rememberCheckbox.checked) {
+              window.localStorage.setItem(window.SITE_LOCK_STORAGE_KEY, "true");
+            } else {
+              window.sessionStorage.setItem(window.SITE_LOCK_SESSION_KEY, "true");
+            }
+          } catch (error) {
+            // Pas de stockage possible — l'équipe passe cette fois, mais
+            // devra resaisir le mot de passe à la prochaine page.
+          }
+          var params = new URLSearchParams(window.location.search);
+          window.location.replace(sanitizeNext(params.get("next")));
+        } else {
+          if (errorEl) errorEl.hidden = false;
+          input.value = "";
+          input.focus();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
