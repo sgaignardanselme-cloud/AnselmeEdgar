@@ -50,8 +50,18 @@ window.SITE_LOCK_GATE_PAGE = "entree.html";
   if (!window.SITE_LOCK_ENABLED) return;
 
   // Nom de fichier de la page courante (ex. "produit.html"), "index.html"
-  // si l'URL est vide/racine ("/" ou "").
-  var here = window.location.pathname.split("/").pop() || "index.html";
+  // si l'URL est vide/racine ("/" ou ""). Cloudflare redirige par défaut
+  // "/produit.html" vers l'URL "propre" "/produit" (307, sans extension)
+  // — donc au moment où ce script tourne, le pathname réel peut très
+  // bien être "/produit" sans ".html" du tout. On uniformise ici en
+  // rajoutant ".html" s'il manque, pour que la comparaison avec
+  // SITE_LOCK_GATE_PAGE (et la construction de "next" plus bas) marche
+  // pareil sur les deux formes d'URL. Sans ça, entree.html lui-même
+  // (servi sur "/entree", sans extension) ne se reconnaîtrait jamais
+  // comme la page de garde et essaierait de se rediriger vers lui-même
+  // en boucle.
+  var rawHere = window.location.pathname.split("/").pop() || "index";
+  var here = /\.html$/.test(rawHere) ? rawHere : rawHere + ".html";
   if (here === window.SITE_LOCK_GATE_PAGE) return;
 
   // Distingue "cette page vient d'être rechargée" (F5, Ctrl+R, bouton
