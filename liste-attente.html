@@ -50,6 +50,13 @@
     </defs>
   </svg>
 
+  <!-- ShaderGradient (même réglages exacts que le reste du site — voir
+       src/shader-bg/ShaderBackground.jsx) derrière les faisceaux SVG
+       animés (.beams-svg, z-index 0) : le canvas se place tout seul en
+       z-index -1 (voir .site-shader-bg), donc l'empilement reste
+       shader → faisceaux → contenu sans rien à ajuster ici. -->
+  <div id="shader-bg" class="site-shader-bg" data-shader-mount aria-hidden="true"></div>
+
   <div class="floating-nav">
     <a href="index.html" class="floating-logo" data-cms="general.brand_name">[NOM MARQUE]</a>
     <div class="nav-actions">
@@ -68,11 +75,10 @@
 
   <div class="site-menu-backdrop" data-menu-backdrop></div>
   <div class="site-menu" id="site-menu">
-    <!-- Pas de ShaderGradient ici : cette page ne charge pas
-         js/shader-bg.bundle.js (son propre fond est l'effet de faisceaux
-         SVG ci-dessous, pas le shader) — même raisonnement que
-         archives.html. .site-menu-tint fournit quand même le fond sombre
-         nécessaire à la lisibilité du texte. -->
+    <!-- Cette page charge maintenant js/shader-bg.bundle.js pour le fond
+         principal (voir #shader-bg plus haut), donc le menu peut monter
+         le sien aussi, comme sur index.html/produit.html/etc. -->
+    <div class="site-menu-shader-bg" data-shader-mount aria-hidden="true"></div>
     <div class="site-menu-tint" aria-hidden="true"></div>
     <div class="site-menu-content">
       <div class="site-menu-header">
@@ -257,15 +263,6 @@
               <label for="email">Email</label>
               <input type="email" id="email" name="email" placeholder="ton@email.com" required />
             </div>
-            <div class="form-field">
-              <label for="reseau">Réseau préféré (optionnel)</label>
-              <select id="reseau" name="reseau">
-                <option value="">Sélectionner...</option>
-                <option value="instagram">Instagram</option>
-                <option value="tiktok">TikTok</option>
-                <option value="email">Email</option>
-              </select>
-            </div>
             <button type="submit" class="btn">S'inscrire à la liste d'attente</button>
             <p class="form-note" data-cms="contact.form_note">
               [PLACEHOLDER] En t'inscrivant, tu acceptes de recevoir des
@@ -293,6 +290,9 @@
   </footer>
 
   <script src="js/script.js"></script>
+  <!-- Bundle React/Three.js buildé depuis src/shader-bg/ via `npm run build:shader`
+       (voir vite.config.js) — monte le fond animé dans #shader-bg. -->
+  <script defer src="js/shader-bg.bundle.js"></script>
   <script src="js/content.js"></script>
   <script>
     // Les <animate> SMIL ne suivent pas prefers-reduced-motion tout

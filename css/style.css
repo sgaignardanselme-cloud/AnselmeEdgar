@@ -3347,28 +3347,29 @@ html.js .flip-value.is-flipping {
   color: rgba(255, 255, 255, 0.7);
 }
 
+/* Deliberately no background/border/blur "card" here — just the bare
+   input, a thin underline (the only visual affordance that this is a
+   field at all), and a plain icon button. The whole point of this
+   control is to stay unnoticed unless someone already knows to look
+   for it. */
 .gate-secret-form {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: 6px;
-  padding: 8px 12px 8px 14px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: var(--radius-sm);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
 }
 
 .gate-secret-row {
   display: flex;
   align-items: center;
   gap: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  padding-bottom: 3px;
 }
 
 .gate-secret-form input[type="password"] {
-  width: 130px;
+  width: 120px;
   background: none;
   border: none;
   color: #fff;
@@ -3386,17 +3387,17 @@ html.js .flip-value.is-flipping {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  background: rgba(255, 255, 255, 0.14);
+  width: 22px;
+  height: 22px;
+  background: none;
   border: none;
-  border-radius: var(--radius-sm);
-  color: #fff;
+  color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
+  transition: color 0.2s ease;
 }
 
 .gate-secret-form button:hover {
-  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
 }
 
 /* "Rester connecté" — décoché par défaut : sans cette case, le
@@ -3443,9 +3444,14 @@ html.js .flip-value.is-flipping {
    la même chose en dur, pour la même raison qu'ailleurs sur le site (un
    passage précédent a montré que la seule cascade de variables ne
    suffisait pas toujours à garantir un texte clair fiable). */
+/* Plain white — same iOS Safari overscroll/rubber-band fix as the rest
+   of the site (.scrollytelling): the ShaderGradient canvas (#shader-bg,
+   see below) covers this in normal view, this is only the strip that
+   shows during overscroll. Kept in sync with that earlier fix rather
+   than a colour-matched value, for the same reliability reasons. */
 html.waitlist-page,
 body.waitlist-page {
-  background: #071b33;
+  background: #fff;
 }
 
 body.waitlist-page {
@@ -3480,7 +3486,6 @@ body.waitlist-page {
   align-items: center;
   justify-content: center;
   padding: 96px 20px 48px;
-  background: radial-gradient(120% 90% at 50% 0%, #0d2b52 0%, #071b33 55%, #05132b 100%);
 }
 
 .waitlist-hero-content {

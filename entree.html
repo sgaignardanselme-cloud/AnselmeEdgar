@@ -52,6 +52,11 @@
     </defs>
   </svg>
 
+  <!-- ShaderGradient (mêmes réglages exacts que le reste du site — voir
+       src/shader-bg/ShaderBackground.jsx) derrière les faisceaux SVG
+       animés plus bas — même empilement que liste-attente.html. -->
+  <div id="shader-bg" class="site-shader-bg" data-shader-mount aria-hidden="true"></div>
+
   <!-- Pas de header/menu/panier ici : rien à quoi naviguer avant d'avoir
        débloqué l'accès complet (voir le lien discret en bas à droite). -->
   <main>
@@ -199,15 +204,6 @@
               <label for="email">Email</label>
               <input type="email" id="email" name="email" placeholder="ton@email.com" required />
             </div>
-            <div class="form-field">
-              <label for="reseau">Réseau préféré (optionnel)</label>
-              <select id="reseau" name="reseau">
-                <option value="">Sélectionner...</option>
-                <option value="instagram">Instagram</option>
-                <option value="tiktok">TikTok</option>
-                <option value="email">Email</option>
-              </select>
-            </div>
             <button type="submit" class="btn">S'inscrire à la liste d'attente</button>
             <p class="form-note" data-cms="contact.form_note">
               [PLACEHOLDER] En t'inscrivant, tu acceptes de recevoir des
@@ -273,6 +269,9 @@
   </div>
 
   <script src="js/script.js"></script>
+  <!-- Bundle React/Three.js buildé depuis src/shader-bg/ via `npm run build:shader`
+       (voir vite.config.js) — monte le fond animé dans #shader-bg. -->
+  <script defer src="js/shader-bg.bundle.js"></script>
   <script src="js/content.js"></script>
   <script>
     // Les <animate> SMIL ne suivent pas prefers-reduced-motion tout
